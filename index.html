@@ -1,0 +1,434 @@
+<html>
+	<head>
+		<title>Three.js graph</title>
+		<style>
+			body { margin: 0; }
+			canvas { display: block; }
+		</style>
+	</head>
+	<body>
+        <script>
+            var camera;
+            var scene;
+            var startTime, endTime, numberOfClicks, numberOfKeysPressed;
+            var objsToTest = [];
+            var currentLayoutButton;
+            var guiInputLeft;
+            var keyboard;
+            var controller1, controller2, controls;
+            let controllerGrip1, controllerGrip2;
+            var textFieldSize = 20;
+            var textFieldWidth = 1.2;
+            var fontFilesName = 'consola';
+            const dateOptions = { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' };
+            var GUIsettings = {
+                'clickedNode': null,
+                'folderShape': {
+                    'gula': false,
+                    'kocka': true
+                },
+                'fileShape': {
+                    'gula': true,
+                    'kocka': false
+                },
+                'repoHeight': 2.0,
+                'graphLevelHeight': 0.4,
+                'aaa': 0
+            }
+            var GUInodeInfo = {
+                'Otvorenie': false,
+                'Historia': false,
+                'Owner': 1, 
+                'Name': 1,
+            }
+        </script>
+
+        <script src="js/three.js"></script>
+        <script src="js/d3.js"></script>
+        <script src="js/three-forcegraph.min.js"></script>
+        <script src="js/TrackballControls.js"></script>
+        <!--<script src="js/VRController.js"></script>-->
+        <script src="js/ViveController.js"></script>
+        <script src="js/three-spritetext.min.js"></script>
+        <script src="js/VRControls.js"></script>
+        <script src="js/highlight.min.js"></script>
+        <link rel="stylesheet" href="css/default.min.css">
+        <script src="js/three-mesh-ui.js"></script>
+        <script src="js/prism.js"></script>
+        <script src="js/datguivr.min.js"></script>
+
+        <script src="js/OBJLoader.js"></script>
+        <script src="js/WebVR.js"></script>
+
+        <script src="js/model.js"></script>
+        <script src="js/view.js"></script>
+        <script src="js/controller.js"></script>
+
+        <!--
+        cd .\Desktop\Diplomovka\Zdrojak\final\
+        python -m http.server
+        -->
+
+
+        <!-- TO DO LIST
+PART    nezabudnut na info k repozitarom + mozno ako obrazok
+        expand/invisible nodes
+        spisat modifikacie kniznic + co som robil navyse
+        kontextove menu na ovladaci
+
+        preco je keyboard v predu
+        -->
+
+		<script type="module">
+            import { VRButton } from './js/VRButton.js';
+            import { DragControls } from './js/DragControls.js';
+            import { XRControllerModelFactory } from './js/XRControllerModelFactory.js';
+
+            (function(){var script=document.createElement('script');script.onload=function(){var stats=new Stats();document.body.appendChild(stats.dom);requestAnimationFrame(function loop(){stats.update();requestAnimationFrame(loop)});};script.src='js/stats.min.js';document.head.appendChild(script);})()
+            WEBVR.checkAvailability().catch( function( message ){
+                document.body.appendChild( WEBVR.getMessageContainer( message ))
+            })
+
+
+
+            // variables
+            //var controller1, controller2, controls;
+            scene = new THREE.Scene();
+            var model, view, controller;
+
+            var roomSize = 10;
+            var room = new THREE.Mesh(
+                new THREE.BoxGeometry( roomSize, roomSize, roomSize, 8, 8, 8 ),
+                new THREE.MeshBasicMaterial( { color: 0x404040, wireframe: true } )
+            );
+            room.position.y = roomSize / 2.0;
+            scene.add( room );
+            
+            // camera
+            camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.1, 20 );
+            camera.position.set(0, 2, 2);
+            scene.add( camera );
+
+            // controller
+            controls = new THREE.VRControls( camera );
+			controls.standing = true;
+
+            var renderer = new THREE.WebGLRenderer( { antialias: true } );
+            renderer.setPixelRatio( window.devicePixelRatio );
+            renderer.outputEncoding = THREE.sRGBEncoding;
+			renderer.setSize( window.innerWidth, window.innerHeight );
+            document.body.appendChild( renderer.domElement );
+            document.body.appendChild( VRButton.createButton( renderer ) );
+            renderer.xr.enabled = true;
+
+            controller1 = renderer.xr.getController( 0 );
+            scene.add( controller1 );
+
+            controller2 = renderer.xr.getController( 1 );
+            scene.add( controller2 );
+
+            const controllerModelFactory = new XRControllerModelFactory();
+            controllerGrip1 = renderer.xr.getControllerGrip( 0 );
+            controllerGrip1.add( controllerModelFactory.createControllerModel( controllerGrip1 ) );
+            scene.add( controllerGrip1 );
+
+            controllerGrip2 = renderer.xr.getControllerGrip( 1 );
+            controllerGrip2.add( controllerModelFactory.createControllerModel( controllerGrip2 ) );
+            scene.add( controllerGrip2 );
+
+            model = MVC.Model;
+            //model.init();
+
+            view = MVC.View;
+            view.init(model);
+            view.initGraph();
+            scene.add(view.myGraph);
+
+            controller = MVC.Controller;
+            //controller.init('mouse', view);
+            controller.init('vive', view);
+
+            // test s GUI
+            var baseGUI = view.createBaseGUI();
+            scene.add(baseGUI);
+            //camera.add(baseGUI);
+            baseGUI.position.set(0,1,-1);
+
+            //view.createLayout(0, 0, 0, "sadsadsdsadsads.html");
+
+            //view.addTextContent(0, 0, 0, "sadsadsdsadsads.html");
+
+            //view.model.getFileContent("MartinSith", "Sandesriner", "city.html").then(function(result) {
+            //    view.addTextField(result, 'html', 0, 0, 0);
+            //});
+
+            //view.model.getFileContent("MartinSith", "Sandesriner", "js/VRCITY.controller.js").then(function(result) {
+            //    view.addScrollTextField(result, "js", 0, 0, 0, 5);
+            //});
+
+            /*view.model.getFileCommitsInfo("MartinSith", "JavaTestRepo", "onlineTest/OnlineTest.java").then(function(result) {
+                console.log(result);
+                result.forEach(commit => {
+                    var d = new Date(commit.commit.author.date);
+                    var date = d.getDate() + "." + ("0" + (d.getMonth()+1)).slice(-2) + "." + d.getFullYear() + " " + ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2) + ":" +  ("0" + d.getSeconds()).slice(-2);
+                    console.log(commit.commit.message + '\n' + commit.commit.author.name + '\n' + date + '\n' + commit.sha);
+                })
+            });*/
+
+            /*view.model.getFileCommitsInfo("MartinSith", "JavaTestRepo", "onlineTest/OnlineTest.java").then(function(result) {
+                var commitsInfo = [];
+
+                result.forEach(commit => {
+                    var date = new Date(commit.commit.author.date);
+                    date = date.toLocaleDateString('sk-SK', dateOptions);
+
+                    commitsInfo.push({
+                        message: commit.commit.message,
+                        author: commit.commit.author.name,
+                        date: date,
+                        sha: commit.sha
+                    });
+
+                });
+
+                var historyLayout = ccc.view.createHistoryLayout(0, 0, 0, commitsInfo);
+                scene.add(historyLayout);
+
+                console.log(scene);
+            });*/
+
+            /*view.model.getFileCommitContent("MartinSith", "JavaTestRepo", "onlineTest/OnlineTest.java", "811a133843762ba50d7b63d0ebba2b7534f4b58f").then(function(result) {
+                console.log(result);
+                ccc.view.addTextField(result, "java", 0, 0, 0);
+                //scene.add(textField);
+            });*/
+
+            //view.model.getCommitActivity("MartinSith", "JavaTestRepo/onlineTest");
+
+            /*view.model.getFileCommitInfo("MartinSith", "JavaTestRepo", "811a133843762ba50d7b63d0ebba2b7534f4b58f").then(function(result) {
+                console.log(result);
+                var tokens = view.addTextContentTokens(result.files[0].patch, result.files[0].filename.split('.').pop());
+                var content = view.addDiffTextContent(tokens, 0);
+                content.position.set(0, 0, 0);
+                scene.add(content);
+            });*/
+
+            /*view.model.getFileCommitInfo("MartinSith", "JavaTestRepo", "811a133843762ba50d7b63d0ebba2b7534f4b58f").then(function(result) {
+                var tokens = view.addTextContentTokens(result.files[0].patch, result.files[0].filename.split('.').pop());
+
+                var layout = ccc.view.createLayout(0, 0, 0);
+                var layoutHeaderTitle = layout.children.filter(obj => { return obj.name == "layoutHeader" })[0].children.filter(obj => { return obj.name == "layoutHeaderTitle" })[0];
+                layoutHeaderTitle.add(
+                    new ThreeMeshUI.Text({
+                        fontSize: 0.05,
+                        fontColor: new THREE.Color( 0x000000 ),
+                        content: "OnlineTest.java (Zmena 2)"
+                    })
+                );
+
+                var content = view.addDiffTextContent(tokens, 0);
+                var layoutContent = layout.children.filter(obj => { return obj.name == "layoutContent" })[0];
+                layoutContent.add(content);
+
+                layout.position.set(0, 0, 0);
+                scene.add(layout);
+            });*/
+
+            /*view.model.getFileContent("MartinSith", "Sandesriner", "city.html").then(function(result) {
+                var tokens = view.addTextContentTokens(result, "html");
+
+                var layout = ccc.view.createLayout(0, 0, 0);
+                var layoutHeaderTitle = layout.children.filter(obj => { return obj.name == "layoutHeader" })[0].children.filter(obj => { return obj.name == "layoutHeaderTitle" })[0];
+                layoutHeaderTitle.add(
+                    new ThreeMeshUI.Text({
+                        fontSize: 0.05,
+                        fontColor: new THREE.Color( 0x000000 ),
+                        content: "city.html"
+                    })
+                );
+
+                var content = ccc.view.addTextContent(tokens, 0);
+                var layoutContent = layout.children.filter(obj => { return obj.name == "layoutContent" })[0];
+                layoutContent.add(content);
+
+                layout.position.set(0, 0, 0);
+                scene.add(layout);
+            });*/
+
+            //camera.lookAt(view.myGraph.position);
+            scene.add(new THREE.AmbientLight(0x333333));
+            const directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
+            directionalLight.position.set( 0, 1, 0.5 );
+            scene.add( directionalLight );
+
+
+            function addToFolder(object, folder) {
+                for (var k in object) {
+                    if (typeof object[k] === 'object') {
+                        const newFolder = dat.GUIVR.create(k);
+                        addToFolder(object[k], newFolder);
+                        folder.addFolder(newFolder);
+                    } else folder.add(object, k).listen().onChange( updateGraphAfterChange );
+                }
+            }
+
+            function initGUI() {
+                const mainGui = dat.GUIVR.create( 'GUI' );
+
+                const guiNode = dat.GUIVR.create( 'Informacie o vybranom prvku' );
+                mainGui.addButton(function(){
+                    console.log("Otvorenie");
+                    console.log(GUIsettings.clickedNode);
+                    if (GUIsettings.clickedNode != null) {
+                        var node = GUIsettings.clickedNode;
+
+                        view.model.getContent(node.__data.user, node.__data.repository, node.__data.path).then(function(result) {
+                            view.updateGraph(result, node);
+                        });
+                    }
+                }).name('Otvorenie');
+                mainGui.addButton(function(){
+                    console.log("Historia");
+                    console.log(GUIsettings.clickedNode);
+                    var node = GUIsettings.clickedNode;
+
+                    view.model.getFileCommitsInfo(node.__data.user, node.__data.repository, node.__data.path).then(function(result) {
+                        result.forEach(commit => {
+
+                            var date = new Date(commit.commit.author.date);
+                            date = date.toLocaleDateString('sk-SK', dateOptions);
+
+                            node.__data.commitsInfo.push({
+                                message: commit.commit.message.split('\n')[0],
+                                author: commit.commit.author.name,
+                                date: date,
+                                sha: commit.sha
+                            });
+                        });
+
+                        var historyLayout = view.createHistoryLayout(0, 0, 0, node.__data.commitsInfo);
+                        node.add(historyLayout);
+                    });
+                }).name('Historia');
+                mainGui.add(GUInodeInfo, 'Owner').name(GUInodeInfo.Owner).listen().onChange( updateNodeAfterChange );
+                mainGui.add(GUInodeInfo, 'Name').name(GUInodeInfo.Owner).listen().onChange( updateNodeAfterChange );
+                //mainGui.addFolder(guiNode);
+
+                const guiGraph = dat.GUIVR.create( 'Nastavenia grafu' );
+                /*guiGraph.addDropdown({'kocka': 0, 'gula': 1}).listen().onChange( function( result ){
+                    console.log(result);
+                    GUIsettings.folderShape = result;
+                    updateGraphAfterChange();
+                });
+                guiGraph.addDropdown([{'kocka': 0, 'gula': 1}]).listen().onChange( function( result ){
+                    console.log(result);
+                    GUIsettings.fileShape = result;
+                    updateGraphAfterChange();
+                });*/
+                const guiDir = dat.GUIVR.create( 'Tvar priecinka' );
+                guiDir.add(GUIsettings.folderShape, 'gula').name('Gula').listen().onChange( updateGraphAfterChange );
+                guiDir.add(GUIsettings.folderShape, 'kocka').name('Kocka').listen().onChange( updateGraphAfterChange );
+                guiGraph.addFolder(guiDir);
+
+                const guiFile = dat.GUIVR.create( 'Tvar suboru' );
+                guiFile.add(GUIsettings.fileShape, 'gula').name('Gula').listen().onChange( updateGraphAfterChange );
+                guiFile.add(GUIsettings.fileShape, 'kocka').name('Kocka').listen().onChange( updateGraphAfterChange );
+                guiGraph.addFolder(guiFile);
+
+                guiGraph.add(GUIsettings, 'repoHeight', 1, 10).step(0.5).name('Vyska prveho nodu').listen().onChange( updateGraphAfterChange );
+                guiGraph.add(GUIsettings, 'graphLevelHeight', 0.1, 2).step(0.1).name('Vyska medzi urovnami').listen().onChange( updateGraphAfterChange );
+                mainGui.addFolder(guiGraph);
+
+                mainGui.position.set(0.6, 1, -1);
+                mainGui.name = "mainGui";
+                scene.add( mainGui );
+
+                guiInputLeft = dat.GUIVR.addInputObject( controller1 )
+	            scene.add( guiInputLeft )
+
+                console.log(guiInputLeft);
+
+                //const guiInputRight = dat.GUIVR.addInputObject( controller2 );
+                //scene.add( guiInputRight );
+
+                controller1.addEventListener( 'menudown', ()=>toggleVR() );
+
+                dat.GUIVR.enableMouse( camera, renderer );
+            }
+
+            function updateNodeAfterChange() {}
+
+            function updateGraphAfterChange() {
+                console.log(GUIsettings);
+
+                // zmena tvaru
+                view.myGraph.children.forEach(node => {
+                    if (node.__graphObjType == 'node') {
+                        if (node.__data.type == 'file') {
+                            if (GUIsettings.fileShape.gula == true) {
+                                var newGeometry = new THREE.SphereGeometry(node.__data.nodeSize / 2, 16, 16);
+                                node.geometry = newGeometry;
+                            } else
+                            if (GUIsettings.fileShape.kocka == true) {
+                                var newGeometry = new THREE.BoxGeometry(node.__data.nodeSize, node.__data.nodeSize, node.__data.nodeSize);
+                                node.geometry = newGeometry;
+                            }
+                        }
+                        if (node.__data.type == 'dir') {
+                            if (GUIsettings.folderShape.gula == true) {
+                                var newGeometry = new THREE.SphereGeometry(node.__data.nodeSize / 2, 16, 16);
+                                node.geometry = newGeometry;
+                            } else
+                            if (GUIsettings.folderShape.kocka == true) {
+                                var newGeometry = new THREE.BoxGeometry(node.__data.nodeSize, node.__data.nodeSize, node.__data.nodeSize);
+                                node.geometry = newGeometry;
+                            }
+                        }
+                    }
+                })
+
+                // zmena vysky
+                view.myGraph.children.forEach(node => {
+                    if (node.__graphObjType == 'node') {
+                        if (node.__data.oldY != null) {
+                            node.__data.oldY = GUIsettings.repoHeight + (node.__data.level * - GUIsettings.graphLevelHeight);
+                        }
+
+                        node.__data.y = GUIsettings.repoHeight + (node.__data.level * - GUIsettings.graphLevelHeight);
+                        node.position.y = node.__data.y;
+                        node.__data.fy = node.__data.y;
+                    }
+                })
+            }
+
+			var render = function () {
+                //controller.handleController( controller1 );
+				//controller.handleController( controller2 );
+
+                ThreeMeshUI.update();
+
+                controller.update();
+                //controller1.update();
+				//controller2.update();
+
+                view.myGraph.tickFrame();
+
+				requestAnimationFrame( animate );
+
+				renderer.render( scene, camera );
+			};
+
+            function animate() {
+                renderer.setAnimationLoop( render );
+            }
+
+            animate();
+            initGUI();
+            makeUI();
+            
+        </script>
+        
+        <pre><code style="display: none;" id="code"></code></pre>
+	</body>
+</html>
+
