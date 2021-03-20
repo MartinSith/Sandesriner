@@ -106,7 +106,15 @@ mmm.getImageContent = async function(user, repo, filePath) {
 mmm.getSearchQuery = async function(type, query) {
     const fileContentUrl = mmm.githubApiUrl + "/search/" + type + "?q=" + query;
     
-    const response = await fetch(fileContentUrl);
+    //const response = await fetch(fileContentUrl);
+    const response = await fetch(fileContentUrl, 
+        {
+            method: "GET",
+            headers: {
+                Accept: "application/vnd.github.mercy-preview+json"
+            }    
+        }
+    )
     const result = await response.json();
     
     console.log(result);
@@ -114,7 +122,7 @@ mmm.getSearchQuery = async function(type, query) {
 }
 
 mmm.getFileCommitsInfo = async function(user, repo, filePath) {
-    const fileContentUrl = mmm.githubApiUrl + "/repos/" + user + "/" + repo + "/commits?path=" + filePath;;
+    const fileContentUrl = mmm.githubApiUrl + "/repos/" + user + "/" + repo + "/commits?path=" + filePath;
     
     const response = await fetch(fileContentUrl);
     const result = await response.json();

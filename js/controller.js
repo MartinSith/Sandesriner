@@ -38,7 +38,7 @@ ccc.viveController = function() {
 	
 	this.init = function() {
         this.controllerLeft.addEventListener( 'selectstart', this.onSelectStart );
-        //this.controllerLeft.addEventListener( 'selectend', this.onSelectEnd );
+        this.controllerLeft.addEventListener( 'selectend', this.onSelectEnd );
         this.controllerLeft.addEventListener( 'connected', function ( event ) {
             this.add( buildController( event.data ) );
         } );
@@ -175,9 +175,14 @@ ccc.viveController = function() {
 		}
 	};*/
 
+    this.onSelectEnd = function(event) {
+        guiInputLeft.pressed(false);
+    }
+
 	this.onSelectStart = function(event) {
         console.log("click");
         console.log(guiInputLeft);
+        guiInputLeft.pressed(true);
         //guiInputHelper.pressed( true );
 		var controller = event.target;
 		var intersects = self.getIntersected(controller);
@@ -190,7 +195,7 @@ ccc.viveController = function() {
 
             if (keyboardIntersect.object.type == 'Key') {
                 if (keyboardIntersect.object.info.input == 'enter') {
-                    ccc.view.model.getSearchQuery(userText.queryType, userText.content).then(function(result) {
+                    ccc.view.model.getSearchQuery(/*userText.queryType*/"repositories", userText.content).then(function(result) {
                         console.log("result");
                         console.log(result);
                         if(result.total_count > 0) {
@@ -523,7 +528,7 @@ ccc.mouse = function() {
 
             if (keyboardIntersect.object.type == 'Key') {
                 if (keyboardIntersect.object.info.input == 'enter') {
-                    ccc.view.model.getSearchQuery(userText.queryType, userText.content).then(function(result) {
+                    ccc.view.model.getSearchQuery(/*userText.queryType*/"repositories", userText.content).then(function(result) {
                         console.log("result");
                         console.log(result);
                         if(result.total_count > 0) {
@@ -700,12 +705,24 @@ ccc.mouse = function() {
             if (intersects[0].object.__data.type == "dir") {
 
                 GUIsettings.clickedNode = intersects[0].object;
+                var clickedNode = intersects[0].object;
 
                 console.log(intersects[0].object.__data);
 
                 intersects[0].object.__data.oldX = intersects[0].object.__data.x;
                 intersects[0].object.__data.oldY = intersects[0].object.__data.y;
                 intersects[0].object.__data.oldZ = intersects[0].object.__data.z;
+
+                var nodeInfoBlock = scene.children.filter(obj => { return obj.name == "baseGUI" })[0].children.filter(obj => { return obj.name == "nodeInfoBlock" })[0];
+                nodeInfoBlock.remove(nodeInfoBlock.children.filter(obj => { return obj.name == "nodeInfoSubBlock" })[0]);
+
+                if (clickedNode.__data.repoInfo) {
+                    var nodeInfoSubBlock = ccc.view.addRepoInfoSubBlock(clickedNode);
+                }
+               /* else {
+                    var nodeInfoSubBlock = ccc.view.addNodeInfoSubBlock(clickedNode);
+                }*/
+                nodeInfoBlock.add(nodeInfoSubBlock);
 
                 //var nodeLayout = ccc.view.createNodeLayout(0, -0.115, 0.01, intersects[0].object.__data.repoInfo);
                 //intersects[0].object.add(nodeLayout);
@@ -740,6 +757,13 @@ ccc.mouse = function() {
             else if (intersects[0].object.__data.type == "file") {
 
                 GUIsettings.clickedNode = intersects[0].object;
+                var clickedNode = intersects[0].object;
+
+                var nodeInfoBlock = scene.children.filter(obj => { return obj.name == "baseGUI" })[0].children.filter(obj => { return obj.name == "nodeInfoBlock" })[0];
+                nodeInfoBlock.remove(nodeInfoBlock.children.filter(obj => { return obj.name == "nodeInfoSubBlock" })[0]);
+
+                var nodeInfoSubBlock = ccc.view.addInfoSubBlock(clickedNode);
+                nodeInfoBlock.add(nodeInfoSubBlock);
 
                 //var nodeLayout = ccc.view.createNodeLayout(0, 0, 0.01);
                 //intersects[0].object.add(nodeLayout);

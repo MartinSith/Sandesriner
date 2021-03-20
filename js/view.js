@@ -189,9 +189,12 @@ vvv.resetGraph = function(data) {
             repoInfo = {
                 owner: repo.owner.login,
                 name: repo.name,
+                description: repo.description,
                 createdDate: repo.created_at,
                 updatedDate: repo.updated_at,
                 language: repo.language,
+                stars: repo.stargazers_count,
+                topics: repo.topics,
                 size: repo.size,
                 forks: repo.forks,
                 score: repo.score,
@@ -1058,8 +1061,200 @@ vvv.createBaseGUI = function() {
     baseGUI.add(buttonKeyboard, space, buttonGraphGUI, space2, buttonStartTest, space3, buttonEndTest);
     objsToTest.push(buttonKeyboard, buttonGraphGUI, buttonStartTest, buttonEndTest);
 
+    // sem
+    const nodeInfoBlock = new ThreeMeshUI.Block({
+        height: 0.5,
+        width: 1,
+        padding: 0.025,
+        fontFamily: './js/' + fontFilesName + '.json',
+        fontTexture: './js/' + fontFilesName + '.png',
+        interLine: 0,
+        alignContent: "left",
+        backgroundOpacity: 0,
+        name: "nodeInfoBlock"
+    });
+
+    nodeInfoBlock.add(
+        new ThreeMeshUI.Text({
+            fontSize: 0.035,
+            fontColor: new THREE.Color(0xd3d3d3),
+            content: "Informacie o vybranom prvku: \n"
+        })
+    );
+
+    const nodeInfoSubBlock = new ThreeMeshUI.InlineBlock({
+        height: 0.5,
+        width: 1,
+        padding: 0.025,
+        fontFamily: './js/' + fontFilesName + '.json',
+        fontTexture: './js/' + fontFilesName + '.png',
+        interLine: 0,
+        alignContent: "left",
+        backgroundOpacity: 0,
+        name: "nodeInfoSubBlock"
+    });
+    nodeInfoBlock.add(nodeInfoSubBlock);
+
+    baseGUI.add(nodeInfoBlock);
+
     console.log(baseGUI);
     return baseGUI;
+}
+
+vvv.addRepoInfoSubBlock = function(node) {
+
+    const nodeInfoSubBlock = new ThreeMeshUI.InlineBlock({
+        height: 0.5,
+        width: 1,
+        padding: 0.025,
+        fontFamily: './js/' + fontFilesName + '.json',
+        fontTexture: './js/' + fontFilesName + '.png',
+        interLine: 0,
+        alignContent: "left",
+        backgroundOpacity: 0,
+        name: "nodeInfoSubBlock"
+    });
+
+    nodeInfoSubBlock.add(
+        new ThreeMeshUI.Text({
+            fontSize: 0.03,
+            fontColor: new THREE.Color(0xd3d3d3),
+            content: "Nazov: " + node.__data.repoInfo.name + "\n"
+        })
+    );
+
+    nodeInfoSubBlock.add(
+        new ThreeMeshUI.Text({
+            fontSize: 0.03,
+            fontColor: new THREE.Color(0xd3d3d3),
+            content: "Popis: " + node.__data.repoInfo.description.replace(/\p{Emoji}/ug, (m, idx) => `[e-${m.codePointAt(0).toString(16)}]`) + "\n"
+        })
+    );
+
+    nodeInfoSubBlock.add(
+        new ThreeMeshUI.Text({
+            fontSize: 0.03,
+            fontColor: new THREE.Color(0xd3d3d3),
+            content: "Topics: "
+        })
+    );
+
+    node.__data.repoInfo.topics.forEach(topic => {
+        nodeInfoSubBlock.add(
+            new ThreeMeshUI.Text({
+                fontSize: 0.03,
+                fontColor: new THREE.Color(0xd3d3d3),
+                content: topic + " "
+            })
+        );
+    });
+
+    nodeInfoSubBlock.add(
+        new ThreeMeshUI.Text({
+            fontSize: 0.03,
+            fontColor: new THREE.Color(0xd3d3d3),
+            content: "\nStars: " + node.__data.repoInfo.stars + "\nForks: " + node.__data.repoInfo.forks + " \nWatchers: " + node.__data.repoInfo.watchers + "\n"
+        })
+    );
+
+    nodeInfoSubBlock.add(
+        new ThreeMeshUI.Text({
+            fontSize: 0.03,
+            fontColor: new THREE.Color(0xd3d3d3),
+            content: "Language: " + node.__data.repoInfo.language + "\n"
+        })
+    );
+
+    const createdDate = new Date(node.__data.repoInfo.createdDate);
+    const updatedDate = new Date(node.__data.repoInfo.updatedDate);
+    nodeInfoSubBlock.add(
+        new ThreeMeshUI.Text({
+            fontSize: 0.03,
+            fontColor: new THREE.Color(0xd3d3d3),
+            content: "Created: " + createdDate.toLocaleDateString('sk-SK', dateOptions) + "\nUpdated: " + updatedDate.toLocaleDateString('sk-SK', dateOptions) + "\n"
+        })
+    );
+
+    /*
+    repoInfo = {
+                owner: repo.owner.login,
+                name: repo.name,
+                createdDate: repo.created_at,
+                updatedDate: repo.updated_at,
+                language: repo.language,
+                size: repo.size,
+                forks: repo.forks,
+                score: repo.score,
+                watchers: repo.watchers
+            };
+    */ 
+    return nodeInfoSubBlock;
+}
+
+vvv.addNodeInfoSubBlock = function(node) {
+
+    const nodeInfoSubBlock = new ThreeMeshUI.InlineBlock({
+        height: 0.5,
+        width: 1,
+        padding: 0.025,
+        fontFamily: './js/' + fontFilesName + '.json',
+        fontTexture: './js/' + fontFilesName + '.png',
+        interLine: 0,
+        alignContent: "left",
+        backgroundOpacity: 0,
+        name: "nodeInfoSubBlock"
+    });
+
+    nodeInfoSubBlock.add(
+        new ThreeMeshUI.Text({
+            fontSize: 0.03,
+            fontColor: new THREE.Color(0xd3d3d3),
+            content: "Nazov: " + node.__data.name + "\n"
+        })
+    );
+
+    nodeInfoSubBlock.add(
+        new ThreeMeshUI.Text({
+            fontSize: 0.03,
+            fontColor: new THREE.Color(0xd3d3d3),
+            content: "Cesta k suboru: " + node.__data.repository + "/" + node.__data.path + "\n"
+        })
+    );
+
+    nodeInfoSubBlock.add(
+        new ThreeMeshUI.Text({
+            fontSize: 0.03,
+            fontColor: new THREE.Color(0xd3d3d3),
+            content: "Typ suboru: " + node.__data.name.split('.').pop() + "\n"
+        })
+    );
+
+    nodeInfoSubBlock.add(
+        new ThreeMeshUI.Text({
+            fontSize: 0.03,
+            fontColor: new THREE.Color(0xd3d3d3),
+            content: "Velkost: " + node.__data.size + " Bajtov\n"
+        })
+    );
+
+    nodeInfoSubBlock.add(
+        new ThreeMeshUI.Text({
+            fontSize: 0.03,
+            fontColor: new THREE.Color(0xd3d3d3),
+            content: "Pocet commitov: " + node.__data.commitCount + "\n"
+        })
+    );
+
+    const updatedDate = new Date(node.__data.lastUpdateDate);
+    nodeInfoSubBlock.add(
+        new ThreeMeshUI.Text({
+            fontSize: 0.03,
+            fontColor: new THREE.Color(0xd3d3d3),
+            content: "Updated: " + updatedDate.toLocaleDateString('sk-SK', dateOptions) + "\n"
+        })
+    );
+
+    return nodeInfoSubBlock;
 }
 
 createButton = function(width, height, name, content) {
@@ -1504,7 +1699,7 @@ function makeUI() {
     	fontSize: 0.045,
     	backgroundOpacity: 0
     }).add(
-    	new ThreeMeshUI.Text({ content: 'Type some text on the keyboard' })
+    	new ThreeMeshUI.Text({ content: 'Type search query on the keyboard' })
     );
 
     userText = new ThreeMeshUI.Text({ content: '', queryType: '' });
@@ -1525,7 +1720,7 @@ function makeUI() {
 
     // BUTTONS
 
-    let layoutButtons = [
+    /*let layoutButtons = [
     	[ 'Repositories', 'repositories' ],
     	[ 'Commit', 'commit' ],
     	[ 'Code', 'code' ],
@@ -1533,6 +1728,15 @@ function makeUI() {
     	[ 'Topics', 'topics' ],
     	[ 'Issues', 'issues' ],
     	[ 'Labels', 'labels' ]
+    ];*/
+
+    let layoutButtons = [
+    	[ 'User', 'user' ],
+    	[ 'Name', 'name' ],
+    	[ 'Language', 'language' ],
+    	[ 'Topic', 'topic' ],
+    	[ 'Sort', 'sort' ],
+    	[ 'Order', 'order' ]
     ];
 
     layoutButtons = layoutButtons.map( (options)=> {
@@ -1580,8 +1784,38 @@ function makeUI() {
 				backgroundOpacity: 1
 			},
 			onSet: ()=> {
-                userText.queryType = options[ 1 ];
+                //userText.queryType = options[ 1 ];
                 console.log(options[ 1 ]);
+                switch( options[ 1 ] ) {
+
+                    // hlavne
+                    case 'user' :
+                        userText.set({ content: userText.content += '+user:' });
+                        break;
+                    
+                    case 'name' :
+                        userText.set({ content: userText.content += '+name:' });
+                        break;
+
+                    case 'language' :
+                        userText.set({ content: userText.content += '+language:' });
+                        break;
+
+                    case 'topic' :
+                        userText.set({ content: userText.content += '+topic:' });
+                        break;
+
+                    // doplnkove
+                    case 'sort' :
+                        userText.set({ content: userText.content += '&sort=' });
+                        break;
+
+                    case 'order' :
+                        userText.set({ content: userText.content += '&order=' });
+                        break;
+
+                    
+                };
 			}
 
 		});
@@ -1597,7 +1831,7 @@ function makeUI() {
     layoutOptions = new ThreeMeshUI.Block({
     	fontFamily: './js/' + fontFilesName + '.json', //fontFamily: './js/roboto-bold.json',
         fontTexture: './js/' + fontFilesName + '.png', // fontTexture: './js/roboto-bold.png',
-    	height: 0.25,
+    	height: 0.3,
     	width: 1,
     	offset: 0,
     	backgroundColor: new THREE.Color( colors.panelBack ),
@@ -1605,7 +1839,7 @@ function makeUI() {
     }).add(
 
     	new ThreeMeshUI.Block({
-    		height: 0.1,
+    		height: 0.07,
     		width: 0.6,
     		offset: 0,
     		justifyContent: 'center',
@@ -1614,7 +1848,7 @@ function makeUI() {
 
 	  		new ThreeMeshUI.Text({
 	  			fontSize: 0.04,
-	  			content: 'Select search type:'
+	  			content: 'Help to search query:'
 	  		})
 
 	  	),
@@ -1645,8 +1879,22 @@ function makeUI() {
 	  	}).add(
 
 	  		layoutButtons[ 4 ],
-	  		layoutButtons[ 5 ],
-	  		layoutButtons[ 6 ],
+	  		layoutButtons[ 5 ]
+
+	  	),
+
+          new ThreeMeshUI.Block({
+    		height: 0.07,
+    		width: 0.6,
+    		offset: 0,
+    		justifyContent: 'center',
+    		backgroundOpacity: 0
+	  	}).add(
+
+	  		new ThreeMeshUI.Text({
+	  			fontSize: 0.03,
+	  			content: 'Example: tetris+language:assembly&sort=stars&order=desc'
+	  		})
 
 	  	)
 
