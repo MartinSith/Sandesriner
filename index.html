@@ -13,7 +13,7 @@
             var startTime, endTime, numberOfClicks, numberOfKeysPressed;
             var objsToTest = [];
             var currentLayoutButton;
-            var guiInputLeft;
+            var guiInputRight;
             var keyboard;
             var controller1, controller2, controls;
             let controllerGrip1, controllerGrip2;
@@ -129,17 +129,17 @@ IMPL    scroll commit history
             controller1 = renderer.xr.getController( 0 );
             scene.add( controller1 );
 
-            controller2 = renderer.xr.getController( 1 );
-            scene.add( controller2 );
+            /*controller2 = renderer.xr.getController( 1 );
+            scene.add( controller2 );*/
 
             const controllerModelFactory = new XRControllerModelFactory();
             controllerGrip1 = renderer.xr.getControllerGrip( 0 );
             controllerGrip1.add( controllerModelFactory.createControllerModel( controllerGrip1 ) );
             scene.add( controllerGrip1 );
 
-            controllerGrip2 = renderer.xr.getControllerGrip( 1 );
+            /*controllerGrip2 = renderer.xr.getControllerGrip( 1 );
             controllerGrip2.add( controllerModelFactory.createControllerModel( controllerGrip2 ) );
-            scene.add( controllerGrip2 );
+            scene.add( controllerGrip2 );*/
 
             model = MVC.Model;
             //model.init();
@@ -345,10 +345,10 @@ IMPL    scroll commit history
                 mainGui.name = "mainGui";
                 scene.add( mainGui );
 
-                guiInputLeft = dat.GUIVR.addInputObject( controller1 )
-	            scene.add( guiInputLeft )
+                guiInputRight = dat.GUIVR.addInputObject( controller1 )
+	            scene.add( guiInputRight )
 
-                console.log(guiInputLeft);
+                console.log(guiInputRight);
 
                 //const guiInputRight = dat.GUIVR.addInputObject( controller2 );
                 //scene.add( guiInputRight );

@@ -28,8 +28,8 @@ ccc.viveController = function() {
 	this.intersectedRight = null;
     this.intersectedLeft2 = null;
 	this.intersectedRight2 = null;
-	this.controllerLeft = controller1;
-	this.controllerRight = controller2;
+	//this.controllerLeft = controller1;
+	this.controllerRight = controller1;
     this.event = null;
     this.data = null;
 	this.tempMatrix = new THREE.Matrix4();
@@ -37,17 +37,17 @@ ccc.viveController = function() {
     var self = this;
 	
 	this.init = function() {
-        this.controllerLeft.addEventListener( 'selectstart', this.onSelectStart );
+        /*this.controllerLeft.addEventListener( 'selectstart', this.onSelectStart );
         this.controllerLeft.addEventListener( 'selectend', this.onSelectEnd );
         this.controllerLeft.addEventListener( 'connected', function ( event ) {
             this.add( buildController( event.data ) );
         } );
         this.controllerLeft.addEventListener( 'disconnected', function () {
             this.remove( this.children[ 0 ] );
-        } );
+        } );*/
 
         this.controllerRight.addEventListener( 'selectstart', this.onSelectStart );
-        //this.controllerRight.addEventListener( 'selectend', this.onSelectEnd );
+        this.controllerRight.addEventListener( 'selectend', this.onSelectEnd );
         this.controllerRight.addEventListener( 'connected', function ( event ) {
             this.add( buildController( event.data ) );
         } );
@@ -122,11 +122,11 @@ ccc.viveController = function() {
 	
 	this.update = function () {        
         //console.log("update");
-		this.intersectedLeft = this.getIntersections(this.controllerLeft, ccc.view.myGraph.children);
+		//this.intersectedLeft = this.getIntersections(this.controllerLeft, ccc.view.myGraph.children);
 		this.intersectedRight = this.getIntersections(this.controllerRight, ccc.view.myGraph.children);
         //console.log(this.intersectedLeft);
 
-        this.intersectedLeft2 = this.getIntersections2(this.controllerLeft);
+       // this.intersectedLeft2 = this.getIntersections2(this.controllerLeft);
 		this.intersectedRight2 = this.getIntersections2(this.controllerRight);
         //console.log(this.intersectedLeft2);
 		
@@ -176,13 +176,13 @@ ccc.viveController = function() {
 	};*/
 
     this.onSelectEnd = function(event) {
-        guiInputLeft.pressed(false);
+        guiInputRight.pressed(false);
     }
 
 	this.onSelectStart = function(event) {
         console.log("click");
-        console.log(guiInputLeft);
-        guiInputLeft.pressed(true);
+        console.log(guiInputRight);
+        guiInputRight.pressed(true);
         //guiInputHelper.pressed( true );
 		var controller = event.target;
 		var intersects = self.getIntersected(controller);
@@ -374,12 +374,24 @@ ccc.viveController = function() {
                 if (intersects.object.__data.type == "dir") {
 
                     GUIsettings.clickedNode = intersects.object;
+                    var clickedNode = intersects.object;
 
                     console.log(intersects.object.__data);
 
                     intersects.object.__data.oldX = intersects.object.__data.x;
                     intersects.object.__data.oldY = intersects.object.__data.y;
                     intersects.object.__data.oldZ = intersects.object.__data.z;
+
+                    var nodeInfoBlock = scene.children.filter(obj => { return obj.name == "baseGUI" })[0].children.filter(obj => { return obj.name == "nodeInfoBlock" })[0];
+                    nodeInfoBlock.remove(nodeInfoBlock.children.filter(obj => { return obj.name == "nodeInfoSubBlock" })[0]);
+
+                    if (clickedNode.__data.repoInfo) {
+                        var nodeInfoSubBlock = ccc.view.addRepoInfoSubBlock(clickedNode);
+                    }
+                    /* else {
+                        var nodeInfoSubBlock = ccc.view.addNodeInfoSubBlock(clickedNode);
+                    }*/
+                    nodeInfoBlock.add(nodeInfoSubBlock);
 
                     //var nodeLayout = ccc.view.createNodeLayout(0, -0.115, 0.01, intersects[0].object.__data.repoInfo);
                     //intersects[0].object.add(nodeLayout);
@@ -414,6 +426,13 @@ ccc.viveController = function() {
                 else if (intersects.object.__data.type == "file") {
 
                     GUIsettings.clickedNode = intersects.object;
+                    var clickedNode = intersects.object;
+
+                    var nodeInfoBlock = scene.children.filter(obj => { return obj.name == "baseGUI" })[0].children.filter(obj => { return obj.name == "nodeInfoBlock" })[0];
+                    nodeInfoBlock.remove(nodeInfoBlock.children.filter(obj => { return obj.name == "nodeInfoSubBlock" })[0]);
+
+                    var nodeInfoSubBlock = ccc.view.addInfoSubBlock(clickedNode);
+                    nodeInfoBlock.add(nodeInfoSubBlock);
 
                     //var nodeLayout = ccc.view.createNodeLayout(0, 0, 0.01);
                     //intersects[0].object.add(nodeLayout);
