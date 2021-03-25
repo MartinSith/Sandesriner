@@ -37,15 +37,7 @@ ccc.viveController = function() {
     var self = this;
 	
 	this.init = function() {
-        /*this.controllerLeft.addEventListener( 'selectstart', this.onSelectStart );
-        this.controllerLeft.addEventListener( 'selectend', this.onSelectEnd );
-        this.controllerLeft.addEventListener( 'connected', function ( event ) {
-            this.add( buildController( event.data ) );
-        } );
-        this.controllerLeft.addEventListener( 'disconnected', function () {
-            this.remove( this.children[ 0 ] );
-        } );*/
-
+        // controller 1
         this.controllerRight.addEventListener( 'selectstart', this.onSelectStart );
         this.controllerRight.addEventListener( 'selectend', this.onSelectEnd );
         this.controllerRight.addEventListener( 'connected', function ( event ) {
@@ -54,6 +46,18 @@ ccc.viveController = function() {
         this.controllerRight.addEventListener( 'disconnected', function () {
             this.remove( this.children[ 0 ] );
         } );
+
+        // controller 2
+        if(globalTwoControllers) {
+            this.controllerLeft.addEventListener( 'selectstart', this.onSelectStart );
+            this.controllerLeft.addEventListener( 'selectend', this.onSelectEnd );
+            this.controllerLeft.addEventListener( 'connected', function ( event ) {
+                this.add( buildController( event.data ) );
+            } );
+            this.controllerLeft.addEventListener( 'disconnected', function () {
+                this.remove( this.children[ 0 ] );
+            } );
+        }
     };
 
     function buildController( data ) {
@@ -73,19 +77,6 @@ ccc.viveController = function() {
                 return new THREE.Mesh( geometry, material );
         }
     }
-
-    /*function onSelectStart() {
-        this.userData.isSelecting = true;
-    }
-    function onSelectEnd() {
-        this.userData.isSelecting = false;
-    }
-
-    function handleController( controller ) {
-        if ( controller.userData.isSelecting ) {
-            console.log("isSelecting");
-        }
-    }*/
 	
 	this.getIntersections = function(controller, toRaycast) {
 		this.tempMatrix.identity().extractRotation(controller.matrixWorld);
@@ -120,60 +111,18 @@ ccc.viveController = function() {
 		return controller == self.controllerLeft ? this.intersectedLeft2 : this.intersectedRight2;
 	};
 	
-	this.update = function () {        
-        //console.log("update");
-		//this.intersectedLeft = this.getIntersections(this.controllerLeft, ccc.view.myGraph.children);
+	this.update = function () {   
+        // controller 1  
 		this.intersectedRight = this.getIntersections(this.controllerRight, ccc.view.myGraph.children);
-        //console.log(this.intersectedLeft);
-
-       // this.intersectedLeft2 = this.getIntersections2(this.controllerLeft);
 		this.intersectedRight2 = this.getIntersections2(this.controllerRight);
-        //console.log(this.intersectedLeft2);
-		
-        // highlight
-		/*if(this.intersectedLeft != null && this.intersectedLeft.object.userData.type == "building") {
-			nsc.VIEW.CITY.highlightFloor(this.intersectedLeft);
-		}
-		if(this.intersectedRight != null && this.intersectedRight.object.userData.type == "building") {
-			nsc.VIEW.CITY.highlightFloor(this.intersectedRight);
-		}*/
+
+        // controller 2
+        if(globalTwoControllers) {
+            this.intersectedLeft = this.getIntersections(this.controllerLeft, ccc.view.myGraph.children);
+            this.intersectedLeft2 = this.getIntersections2(this.controllerLeft);
+        }
 		
     };
-	
-	/*this.onGripsDown = function(event) {
-		var controller = event.target;
-		
-		var object = controller.getObjectByName("codeBlock");
-		if (object != null) {
-			controller.remove(object);
-			object.matrix.premultiply(controller.matrixWorld);
-			object.matrix.premultiply(nsv.CODESPACE.group.matrix);
-			object.matrix.decompose( object.position, object.quaternion, object.scale );
-			nsv.CODESPACE.group.add(object);
-		}
-		else {
-			var intersected = self.getIntersected(controller);
-			if(intersected != null) {
-				object = intersected.object;
-				if(object.userData.type == "codeLabel") {
-					object = object.parent;
-				}
-				else if(object.userData.type == "codePlane") {
-					object = object.parent.parent;
-				}
-				else {
-					object = null;
-				}
-				if(object != null) {
-					nsv.CODESPACE.group.remove(object);
-					object.matrix.premultiply(nsv.CODESPACE.group.matrixWorld);
-					object.matrix.premultiply(new THREE.Matrix4().getInverse(controller.matrix));
-					object.matrix.decompose( object.position, object.quaternion, object.scale );
-					controller.add(object);
-				}
-			}
-		}
-	};*/
 
     this.onSelectEnd = function(event) {
         guiInputRight.pressed(false);
