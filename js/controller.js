@@ -33,6 +33,7 @@ ccc.viveController = function() {
     this.event = null;
     this.data = null;
 	this.tempMatrix = new THREE.Matrix4();
+    this.pressedKeys = new Set();
 	
     var self = this;
 	
@@ -41,6 +42,7 @@ ccc.viveController = function() {
         this.controllerRight.addEventListener( 'selectstart', this.onSelectStart );
         this.controllerRight.addEventListener( 'selectend', this.onSelectEnd );
         this.controllerRight.addEventListener( 'connected', function ( event ) {
+            gamepad = event.data.gamepad;
             this.add( buildController( event.data ) );
         } );
         this.controllerRight.addEventListener( 'disconnected', function () {
@@ -58,6 +60,13 @@ ccc.viveController = function() {
                 this.remove( this.children[ 0 ] );
             } );
         }
+    };
+
+    this.updateMoves = function() {
+        this.pressedKeys.forEach(function(key) {
+            camera.position.z -= key.x;
+            camera.position.x -= key.y;
+        });
     };
 
     function buildController( data ) {
@@ -121,6 +130,17 @@ ccc.viveController = function() {
             this.intersectedLeft = this.getIntersections(this.controllerLeft, ccc.view.myGraph.children);
             this.intersectedLeft2 = this.getIntersections2(this.controllerLeft);
         }
+
+        if (gamepad) {
+            if (gamepad.axes[0] != gamepadOld.axes[0] || gamepad.axes[1] != gamepadOld.axes[1]) {
+                gamepadOld.axes[0] = gamepad.axes[0];
+                gamepadOld.axes[1] = gamepad.axes[1];
+
+                self.pressedKeys.add({x: gamepad.axes[0], y: gamepad.axes[1]});
+            }
+        }   
+
+        this.updateMoves();
 		
     };
 
@@ -129,6 +149,8 @@ ccc.viveController = function() {
     }
 
 	this.onSelectStart = function(event) {
+        console.log(gamepad);
+        buttonPressed = true;
         console.log("click");
         console.log(guiInputRight);
         guiInputRight.pressed(true);

@@ -9,6 +9,7 @@
 	<body>
         <script>
             var camera, scene;
+            var gamepad, gamepadOld = {'axes': [0, 0]};
             var startTime, endTime, numberOfClicks, numberOfKeysPressed;
             var objsToTest = [];
             var currentLayoutButton;
@@ -591,7 +592,7 @@ IMPL    scroll commit history
             }
 
 			var render = function () {
-                dollyMove();
+                //dollyMove();
 
                 ThreeMeshUI.update();
 
