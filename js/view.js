@@ -31,15 +31,24 @@ vvv.initGraph = function() {
             .nodeOpacity(0.9)
             .nodeThreeObject(node => {
                 
-                if (node.type == 'dir')
+                if (node.type == 'dir') {
                     var object = new THREE.BoxGeometry(node.nodeSize, node.nodeSize, node.nodeSize);
-                else 
+                    if (node.repoInfo) {
+                        var material = new THREE.MeshLambertMaterial({ map: vvv.createRepoNodeTexture(node.name), depthWrite: true, transparent: false, opacity: 0 });
+                        material.map.minFilter = THREE.LinearFilter;
+                    } else {
+                        var material = new THREE.MeshLambertMaterial({depthWrite: true, transparent: false, opacity: 0, color: node.color });
+                    }
+                }
+                else {
                     var object = new THREE.SphereGeometry(node.nodeSize / 2, 16, 16);
-
+                    var material = new THREE.MeshLambertMaterial({depthWrite: true, transparent: false, opacity: 0, color: node.color });
+                }
+                
                 const obj = new THREE.Mesh(
                     object,
                     //new THREE.SphereGeometry(node.size),
-                    new THREE.MeshLambertMaterial({ depthWrite: false, transparent: false, opacity: 0, color: node.color })
+                    material
                 );
 
                 const sprite = new SpriteText(node.name);
@@ -48,6 +57,7 @@ vvv.initGraph = function() {
                 sprite.strokeColor = 0xffff00;
                 sprite.textHeight = 0.02;
                 obj.add(sprite);
+                sprite.position.y -= (node.nodeSize / 2 + 0.03);
 
                 return obj;
             })
@@ -62,6 +72,42 @@ vvv.initGraph = function() {
     //console.log(vvv._graphData.nodes[0].fx);
     //vvv._graphData.nodes[0].y = 2;
     //vvv._graphData.nodes[0].fy = 2;
+}
+
+vvv.createRepoNodeTexture = function(text) {
+    var canvas,
+        context,
+        metrics = null,
+        textHeight = 100,
+        textWidth = 0;
+
+    canvas = document.createElement('canvas'),
+    context = canvas.getContext('2d');
+
+    metrics = context.measureText(text);
+    var textWidth = metrics.width * 10;
+    console.log(textWidth);
+
+    canvas.width = textWidth;
+    canvas.height = textHeight;
+    canvas.color = "#FFFF00";
+    context.font = "normal " + textHeight + "px Arial";
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillStyle = "#FF0000";
+    context.fillText(text, canvas.width / 2, canvas.height / 2);
+
+    var texture = new THREE.Texture(canvas);
+    texture.needsUpdate = true;
+
+    return texture;
+
+    var object = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+    const obj = new THREE.Mesh(
+        object,
+        new THREE.MeshLambertMaterial({ map: texture, depthWrite: true, transparent: false, opacity: 0})
+    );
+    return obj;
 }
 
 function fixNodesPositions(){

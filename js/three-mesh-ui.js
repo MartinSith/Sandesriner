@@ -17720,7 +17720,12 @@
                 t[n] = new c(e, this.getFontFamily()), t[n].translate(e.offsetX, e.offsetY, 0)
             });
             const e = a.mergeBufferGeometries(t);
-            return new i.h(e, this.getFontMaterial())
+			var m = this.getFontMaterial();
+			console.log(m);
+			m.uniforms.u_texture.value.generateMipmaps = false;
+			m.uniforms.u_texture.value.minFilter = THREE.LinearFilter;
+			//m.uniforms.u_texture.value.anisotropy = 16;
+            return new i.h(e, m)
         }
     };
 
