@@ -61,8 +61,8 @@ ccc.viveController = function() {
 
     this.updateMoves = function() {
         this.pressedKeys.forEach(function(key) {
-            tempCamera.position.z -= key.x/10;
-            tempCamera.position.x -= key.y/10;
+            tempCamera.position.x += key.x/10;
+            tempCamera.position.z += key.y/10;
             controls.update();
             self.pressedKeys.delete(key);
         });
@@ -98,7 +98,12 @@ ccc.viveController = function() {
 		
 		if (intersects.length != 0 && keyboardIntersect == null) {
             line.scale.z = intersects[0].distance;
-            if (GUIsettings.aimedNode == null || GUIsettings.aimedNode != intersects[0].object) {
+            if (GUIsettings.aimedNode == null) {
+                GUIsettings.aimedNode = intersects[0].object;
+                GUIsettings.aimedNode.material.color.setHex( 0x0cbfe9 );
+            }
+            else if (GUIsettings.aimedNode != intersects[0].object) {
+                GUIsettings.aimedNode.material.color.set( GUIsettings.aimedNode.__data.color );
                 GUIsettings.aimedNode = intersects[0].object;
                 GUIsettings.aimedNode.material.color.setHex( 0x0cbfe9 );
             }
@@ -111,7 +116,12 @@ ccc.viveController = function() {
         else if (intersects.length != 0 && keyboardIntersect != null) {
             if (intersects[0].distance < keyboardIntersect.distance) {
                 line.scale.z = intersects[0].distance;
-                if (GUIsettings.aimedNode == null || GUIsettings.aimedNode != intersects[0].object) {
+                if (GUIsettings.aimedNode == null) {
+                    GUIsettings.aimedNode = intersects[0].object;
+                    GUIsettings.aimedNode.material.color.setHex( 0x0cbfe9 );
+                }
+                else if (GUIsettings.aimedNode != intersects[0].object) {
+                    GUIsettings.aimedNode.material.color.set( GUIsettings.aimedNode.__data.color );
                     GUIsettings.aimedNode = intersects[0].object;
                     GUIsettings.aimedNode.material.color.setHex( 0x0cbfe9 );
                 }
@@ -715,7 +725,12 @@ ccc.mouse = function() {
             console.log(intersects[0]);
             console.log(ccc.view);
 
-            if (GUIsettings.aimedNode == null || GUIsettings.aimedNode != intersects[0].object) {
+            if (GUIsettings.aimedNode == null) {
+                GUIsettings.aimedNode = intersects[0].object;
+                GUIsettings.aimedNode.material.color.setHex( 0x0cbfe9 );
+            }
+            else if (GUIsettings.aimedNode != intersects[0].object) {
+                GUIsettings.aimedNode.material.color.set( GUIsettings.aimedNode.__data.color );
                 GUIsettings.aimedNode = intersects[0].object;
                 GUIsettings.aimedNode.material.color.setHex( 0x0cbfe9 );
             }
@@ -854,7 +869,6 @@ ccc.mouse = function() {
         }
         else {
             if (GUIsettings.aimedNode) {
-                console.log(GUIsettings.aimedNode);
                 GUIsettings.aimedNode.material.color.set( GUIsettings.aimedNode.__data.color );
                 GUIsettings.aimedNode = null;
             }
