@@ -1027,11 +1027,13 @@ vvv.addNodeInfoSubBlock = function(node) {
         })
     );
 
+    if (node.__data.type == "file") var type = node.__data.name.split('.').pop();
+    else var type = node.__data.type;
     nodeInfoSubBlock.add(
         new ThreeMeshUI.Text({
             fontSize: 0.03,
             fontColor: new THREE.Color(0xd3d3d3),
-            content: "Typ suboru: " + node.__data.name.split('.').pop() + "\n"
+            content: "Typ suboru: " + type + "\n"
         })
     );
 

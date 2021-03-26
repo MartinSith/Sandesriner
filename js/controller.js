@@ -5,16 +5,16 @@ var ccc = MVC.Controller;
 
 ccc.init = function(type, view) {
     if (type == 'mouse') {
-        ccc.view = view;
         ccc.controller = new ccc.mouse();
-        ccc.controller.init();
     }
-    if (type == 'vive') {
-        console.log("vive");
-        ccc.view = view;
+    else if (type == 'vive') {
         ccc.controller = new ccc.viveController();
-        ccc.controller.init();
     }
+    else {
+        ccc.controller = new ccc.mouse();
+    }
+    ccc.view = view;
+    ccc.controller.init();
 }
 
 ccc.update = function() {
@@ -22,12 +22,9 @@ ccc.update = function() {
 };
 
 ccc.viveController = function() {
-	
 	this.raycaster = new THREE.Raycaster();
     this.intersectedLeft = null;
 	this.intersectedRight = null;
-    this.intersectedLeft2 = null;
-	this.intersectedRight2 = null;
 	//this.controllerLeft = controller1;
 	this.controllerRight = controller1;
     this.event = null;
@@ -64,8 +61,10 @@ ccc.viveController = function() {
 
     this.updateMoves = function() {
         this.pressedKeys.forEach(function(key) {
-            camera.position.z -= key.x;
-            camera.position.x -= key.y;
+            tempCamera.position.z -= key.x/10;
+            tempCamera.position.x -= key.y/10;
+            controls.update();
+            self.pressedKeys.delete(key);
         });
     };
 
@@ -91,24 +90,44 @@ ccc.viveController = function() {
 		this.tempMatrix.identity().extractRotation(controller.matrixWorld);
 		this.raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);
 		this.raycaster.ray.direction.set(0, 0, -1).applyMatrix4(this.tempMatrix);
+        
 		var intersects = this.raycaster.intersectObjects(toRaycast);
-		
-		if ( intersects.length != 0 ) {
-			return intersects[0];
-		} else {
-			return null;
-		}
-	};
-
-    this.getIntersections2 = function(controller) {
-		this.tempMatrix.identity().extractRotation(controller.matrixWorld);
-		this.raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);
-		this.raycaster.ray.direction.set(0, 0, -1).applyMatrix4(this.tempMatrix);
         var keyboardIntersect = raycast(this.raycaster);
+
+        var line = controller.getObjectByName("line");
 		
-		if ( keyboardIntersect != null ) {
+		if (intersects.length != 0 && keyboardIntersect == null) {
+            line.scale.z = intersects[0].distance;
+            if (GUIsettings.aimedNode == null || GUIsettings.aimedNode != intersects[0].object) {
+                GUIsettings.aimedNode = intersects[0].object;
+                GUIsettings.aimedNode.material.color.setHex( 0x0cbfe9 );
+            }
+			return intersects[0];
+		} 
+        else if (intersects.length == 0 && keyboardIntersect != null) {
+            line.scale.z = keyboardIntersect.distance;
 			return keyboardIntersect;
-		} else {
+        }
+        else if (intersects.length != 0 && keyboardIntersect != null) {
+            if (intersects[0].distance < keyboardIntersect.distance) {
+                line.scale.z = intersects[0].distance;
+                if (GUIsettings.aimedNode == null || GUIsettings.aimedNode != intersects[0].object) {
+                    GUIsettings.aimedNode = intersects[0].object;
+                    GUIsettings.aimedNode.material.color.setHex( 0x0cbfe9 );
+                }
+                return intersects[0];
+            }
+            else {
+                line.scale.z = keyboardIntersect.distance;
+			    return keyboardIntersect;
+            }
+        }
+        else {
+            line.scale.z = 5;
+            if (GUIsettings.aimedNode) {
+                GUIsettings.aimedNode.material.color.set( GUIsettings.aimedNode.__data.color );
+                GUIsettings.aimedNode = null;
+            }
 			return null;
 		}
 	};
@@ -116,19 +135,14 @@ ccc.viveController = function() {
 	this.getIntersected = function(controller) {
 		return controller == self.controllerLeft ? this.intersectedLeft : this.intersectedRight;
 	};
-    this.getIntersected2 = function(controller) {
-		return controller == self.controllerLeft ? this.intersectedLeft2 : this.intersectedRight2;
-	};
 	
 	this.update = function () {   
         // controller 1  
 		this.intersectedRight = this.getIntersections(this.controllerRight, ccc.view.myGraph.children);
-		this.intersectedRight2 = this.getIntersections2(this.controllerRight);
 
         // controller 2
         if(globalTwoControllers) {
             this.intersectedLeft = this.getIntersections(this.controllerLeft, ccc.view.myGraph.children);
-            this.intersectedLeft2 = this.getIntersections2(this.controllerLeft);
         }
 
         if (gamepad) {
@@ -136,12 +150,11 @@ ccc.viveController = function() {
                 gamepadOld.axes[0] = gamepad.axes[0];
                 gamepadOld.axes[1] = gamepad.axes[1];
 
-                self.pressedKeys.add({x: gamepad.axes[0], y: gamepad.axes[1]});
+                self.pressedKeys.add({'x': gamepad.axes[0], 'y': gamepad.axes[1]});
             }
         }   
 
         this.updateMoves();
-		
     };
 
     this.onSelectEnd = function(event) {
@@ -150,23 +163,21 @@ ccc.viveController = function() {
 
 	this.onSelectStart = function(event) {
         console.log(gamepad);
-        buttonPressed = true;
         console.log("click");
         console.log(guiInputRight);
         guiInputRight.pressed(true);
-        //guiInputHelper.pressed( true );
 		var controller = event.target;
 		var intersects = self.getIntersected(controller);
-        var keyboardIntersect = self.getIntersected2(controller);
+        console.log("intersects");
         console.log(intersects);
-        console.log(keyboardIntersect);
 
-        if (keyboardIntersect && keyboardIntersect.object.isUI){
-            keyboardIntersect.object.setState( 'selected' );
+        if (intersects && intersects.object.isUI){
+            intersects.object.setState( 'selected' );
 
-            if (keyboardIntersect.object.type == 'Key') {
-                if (keyboardIntersect.object.info.input == 'enter') {
-                    ccc.view.model.getSearchQuery(/*userText.queryType*/"repositories", userText.content).then(function(result) {
+            // ak je to znak na klavesnici a Enter
+            if (intersects.object.type == 'Key') {
+                if (intersects.object.info.input == 'enter') {
+                    ccc.view.model.getSearchQuery("repositories", userText.content).then(function(result) {
                         console.log("result");
                         console.log(result);
                         if(result.total_count > 0) {
@@ -176,20 +187,23 @@ ccc.viveController = function() {
                 }
             }
 
-            if (keyboardIntersect.object.name == "buttonMinimalize") {
-                keyboardIntersect.object.parent.parent.visible = false;
+            // minimalizovanie
+            if (intersects.object.name == "buttonMinimalize") {
+                intersects.object.parent.parent.visible = false;
             }
 
-            if (keyboardIntersect.object.name == "buttonExpand") {
-                var node = keyboardIntersect.object.parent.parent;
+            // otvorenie
+            if (intersects.object.name == "buttonExpand") {
+                var node = intersects.object.parent.parent;
 
                 ccc.view.model.getContent(node.__data.user, node.__data.repository, node.__data.path).then(function(result) {
                     ccc.view.updateGraph(result, node);
                 });
             }
 
-            if (keyboardIntersect.object.name == "buttonHistory") {
-                var node = keyboardIntersect.object.parent.parent;
+            // historia
+            if (intersects.object.name == "buttonHistory") {
+                var node = intersects.object.parent.parent;
 
                 ccc.view.model.getFileCommitsInfo(node.__data.user, node.__data.repository, node.__data.path).then(function(result) {
                     result.forEach(commit => {
@@ -205,10 +219,6 @@ ccc.viveController = function() {
                         });
 
                         console.log(node.__data.commitsInfo);
-                        
-                        /*var d = new Date(commit.commit.author.date);
-                        var date = d.getDate() + "." + ("0" + (d.getMonth()+1)).slice(-2) + "." + d.getFullYear() + " " + ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2) + ":" +  ("0" + d.getSeconds()).slice(-2);
-                        console.log(commit.commit.message + '\n' + commit.commit.author.name + '\n' + date + '\n' + commit.sha);*/
                     });
 
                     var historyLayout = ccc.view.createHistoryLayout(0, 0, 0, node.__data.commitsInfo);
@@ -216,11 +226,12 @@ ccc.viveController = function() {
                 });
             }
 
-            if (keyboardIntersect.object.name == "buttonCommit") {
-                var node = keyboardIntersect.object.parent.parent;
+            // button commit
+            if (intersects.object.name == "buttonCommit") {
+                var node = intersects.object.parent.parent;
 
-                ccc.view.model.getFileCommitContent(node.__data.user, node.__data.repository, node.__data.path, keyboardIntersect.object.info.sha).then(function(result) {
-                    var commitInfo = node.__data.commitsInfo.filter(obj => { return obj.sha == keyboardIntersect.object.info.sha })[0];
+                ccc.view.model.getFileCommitContent(node.__data.user, node.__data.repository, node.__data.path, intersects.object.info.sha).then(function(result) {
+                    var commitInfo = node.__data.commitsInfo.filter(obj => { return obj.sha == intersects.object.info.sha })[0];
                     commitInfo.content = result;
                     commitInfo.contentTokens = ccc.view.addTextContentTokens(result, node.__data.name.split('.').pop());
 
@@ -244,7 +255,8 @@ ccc.viveController = function() {
                 });
             }
 
-            if (keyboardIntersect.object.name == "buttonKeyboard") {
+            // zobrazenie/skrytie klavesnice
+            if (intersects.object.name == "buttonKeyboard") {
 
                 var keyboardTop = scene.children.filter(obj => { return obj.name == "keyboardTop" })[0];
                 var keyboardBottom = scene.children.filter(obj => { return obj.name == "keyboardBottom" })[0];
@@ -259,8 +271,8 @@ ccc.viveController = function() {
                 
             }
 
-            if (keyboardIntersect.object.name == "buttonGraphGUI") {
-
+            // zobrazenie/skrytie Graph GUI
+            if (intersects.object.name == "buttonGraphGUI") {
                 var mainGui = scene.children.filter(obj => { return obj.name == "mainGui" })[0];
 
                 if (mainGui.visible == true) {
@@ -271,7 +283,8 @@ ccc.viveController = function() {
                 
             }
 
-            if (keyboardIntersect.object.name == "buttonStartTest") {
+            // tlacidlo zapnut test
+            if (intersects.object.name == "buttonStartTest") {
                 startTime = new Date();
 
                 numberOfClicks = 0;
@@ -288,21 +301,22 @@ ccc.viveController = function() {
                 
             }
 
-            if (keyboardIntersect.object.name == "buttonEndTest") {
+            // tlacidlo zapnut test
+            if (intersects.object.name == "buttonEndTest") {
                 endTime = new Date();
                 var timeDiff = endTime - startTime;
                 timeDiff /= 1000;
                 var seconds = Math.round(timeDiff);
 
                 alert("Cas potrebny na splnenie ulohy: " + seconds + " sekund" + "\nPocet kliknuti: " + numberOfClicks + "\nPocet stlaceni klavesnice: " + numberOfKeysPressed);
-                
             }
 
-            if (keyboardIntersect.object.info) {
-                if (keyboardIntersect.object.info.type == 'button') {
-                    var button = keyboardIntersect.object;
-                    var layout = keyboardIntersect.object.parent.parent;
-                    var node = keyboardIntersect.object.parent.parent.parent;
+            // scroll buttony
+            if (intersects.object.info) {
+                if (intersects.object.info.type == 'button') {
+                    var button = intersects.object;
+                    var layout = intersects.object.parent.parent;
+                    var node = intersects.object.parent.parent.parent;
 
                     if (layout.info.scrollPosition + button.info.scrollValue > node.__data.fileContentTokens.length) {
                         return;
@@ -322,18 +336,13 @@ ccc.viveController = function() {
             }
 
             objsToTest.forEach( (obj)=> {
-
                 if ( obj.isUI ) {
-        
-                    // Component.setState internally call component.set with the options you defined in component.setupState
                     if ( obj.states['idle'] ) obj.setState( 'idle' );
         
                 };
-        
             });
-        }
-
-        if (intersects != null) {
+        } 
+        else if (intersects && !intersects.object.isUI) {
             console.log("intersects != null");
             //if (intersects[0] != null) {
 
@@ -359,10 +368,18 @@ ccc.viveController = function() {
                     if (clickedNode.__data.repoInfo) {
                         var nodeInfoSubBlock = ccc.view.addRepoInfoSubBlock(clickedNode);
                     }
-                    /* else {
+                    else {
                         var nodeInfoSubBlock = ccc.view.addNodeInfoSubBlock(clickedNode);
-                    }*/
+                    }
                     nodeInfoBlock.add(nodeInfoSubBlock);
+
+                    if (GUIsettings.clickedNode != null) {
+                        var node = GUIsettings.clickedNode;
+
+                        ccc.view.model.getContent(node.__data.user, node.__data.repository, node.__data.path).then(function(result) {
+                            ccc.view.updateGraph(result, node);
+                        });
+                    }
 
                     //var nodeLayout = ccc.view.createNodeLayout(0, -0.115, 0.01, intersects[0].object.__data.repoInfo);
                     //intersects[0].object.add(nodeLayout);
@@ -402,8 +419,16 @@ ccc.viveController = function() {
                     var nodeInfoBlock = scene.children.filter(obj => { return obj.name == "baseGUI" })[0].children.filter(obj => { return obj.name == "nodeInfoBlock" })[0];
                     nodeInfoBlock.remove(nodeInfoBlock.children.filter(obj => { return obj.name == "nodeInfoSubBlock" })[0]);
 
-                    var nodeInfoSubBlock = ccc.view.addInfoSubBlock(clickedNode);
+                    var nodeInfoSubBlock = ccc.view.addNodeInfoSubBlock(clickedNode);
                     nodeInfoBlock.add(nodeInfoSubBlock);
+
+                    if (GUIsettings.clickedNode != null) {
+                        var node = GUIsettings.clickedNode;
+
+                        ccc.view.model.getContent(node.__data.user, node.__data.repository, node.__data.path).then(function(result) {
+                            ccc.view.updateGraph(result, node);
+                        });
+                    }
 
                     //var nodeLayout = ccc.view.createNodeLayout(0, 0, 0.01);
                     //intersects[0].object.add(nodeLayout);
@@ -688,8 +713,12 @@ ccc.mouse = function() {
         if (intersects[0] != null) {
 
             console.log(intersects[0]);
-
             console.log(ccc.view);
+
+            if (GUIsettings.aimedNode == null || GUIsettings.aimedNode != intersects[0].object) {
+                GUIsettings.aimedNode = intersects[0].object;
+                GUIsettings.aimedNode.material.color.setHex( 0x0cbfe9 );
+            }
 
             // directory
             if (intersects[0].object.__data.type == "dir") {
@@ -709,9 +738,9 @@ ccc.mouse = function() {
                 if (clickedNode.__data.repoInfo) {
                     var nodeInfoSubBlock = ccc.view.addRepoInfoSubBlock(clickedNode);
                 }
-               /* else {
+               else {
                     var nodeInfoSubBlock = ccc.view.addNodeInfoSubBlock(clickedNode);
-                }*/
+                }
                 nodeInfoBlock.add(nodeInfoSubBlock);
 
                 //var nodeLayout = ccc.view.createNodeLayout(0, -0.115, 0.01, intersects[0].object.__data.repoInfo);
@@ -752,7 +781,7 @@ ccc.mouse = function() {
                 var nodeInfoBlock = scene.children.filter(obj => { return obj.name == "baseGUI" })[0].children.filter(obj => { return obj.name == "nodeInfoBlock" })[0];
                 nodeInfoBlock.remove(nodeInfoBlock.children.filter(obj => { return obj.name == "nodeInfoSubBlock" })[0]);
 
-                var nodeInfoSubBlock = ccc.view.addInfoSubBlock(clickedNode);
+                var nodeInfoSubBlock = ccc.view.addNodeInfoSubBlock(clickedNode);
                 nodeInfoBlock.add(nodeInfoSubBlock);
 
                 //var nodeLayout = ccc.view.createNodeLayout(0, 0, 0.01);
@@ -821,6 +850,13 @@ ccc.mouse = function() {
                         // intersects[0].object.__data.expanded = 1;
                     }
                 }
+            }
+        }
+        else {
+            if (GUIsettings.aimedNode) {
+                console.log(GUIsettings.aimedNode);
+                GUIsettings.aimedNode.material.color.set( GUIsettings.aimedNode.__data.color );
+                GUIsettings.aimedNode = null;
             }
         }
     }
