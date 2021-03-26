@@ -148,11 +148,11 @@ ccc.viveController = function() {
 	
 	this.update = function () {   
         // controller 1  
-		this.intersectedRight = this.getIntersections(this.controllerRight, ccc.view.myGraph.children);
+		this.intersectedRight = this.getIntersections(this.controllerRight, ccc.view.myGraph.children.filter(child => child.__graphObjType == 'node'));
 
         // controller 2
         if(globalTwoControllers) {
-            this.intersectedLeft = this.getIntersections(this.controllerLeft, ccc.view.myGraph.children);
+            this.intersectedLeft = this.getIntersections(this.controllerLeft, ccc.view.myGraph.children.filter(child => child.__graphObjType == 'node'));
         }
 
         if (gamepad) {
@@ -541,7 +541,7 @@ ccc.mouse = function() {
         self.raycaster.setFromCamera(self.mouse, this.camera);
 
         console.log(objsToTest);
-        var intersects = self.raycaster.intersectObjects(ccc.view.myGraph.children);
+        var intersects = self.raycaster.intersectObjects(ccc.view.myGraph.children.filter(child => child.__graphObjType == 'node'));
         var keyboardIntersect = raycast(self.raycaster);
 
         console.log(keyboardIntersect);
