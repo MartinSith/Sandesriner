@@ -161,8 +161,8 @@ IMPL    scroll commit history
             scene.add(view.myGraph);
 
             controller = MVC.Controller;
-            //controller.init('mouse', view);
-            controller.init('vive', view);
+            controller.init('mouse', view);
+            //controller.init('vive', view);
 
             // test s GUI
             var baseGUI = view.createBaseGUI();
@@ -418,6 +418,8 @@ IMPL    scroll commit history
             tempCamera.add( camera );
             tempCamera.add(controller1);
             tempCamera.add(controllerGrip1);
+
+            tempCamera.position.set( 0, -0.5, 0.3 );
 
 			var render = function () {
                 ThreeMeshUI.update();

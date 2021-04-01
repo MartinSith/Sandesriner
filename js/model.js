@@ -9,6 +9,13 @@ mmm.graphData = {
     links: []
 };
 
+var fetchInfo = {
+    method: "GET",
+    headers: {
+        Authorization: "token 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" 
+    }
+}
+
 mmm.init = function() {
 
     const levels = null,
@@ -55,7 +62,17 @@ mmm.init = function() {
 mmm.getRepository = async function(user, repo) {
     const contentUrl = mmm.githubApiUrl + "/repos/" + user + "/" + repo;
     
-    const response = await fetch(contentUrl);
+    const response = await fetch(contentUrl, fetchInfo);
+    const result = await response.json();
+    
+    console.log(result);
+    return result;
+}
+
+mmm.getRateLimit = async function() {
+    const contentUrl = mmm.githubApiUrl + "/rate_limit";
+    
+    const response = await fetch(contentUrl, fetchInfo);
     const result = await response.json();
     
     console.log(result);
@@ -65,7 +82,7 @@ mmm.getRepository = async function(user, repo) {
 mmm.getUserRepositories = async function(user) {
     const contentUrl = mmm.githubApiUrl + "/users/" + user + "/repos";
     
-    const response = await fetch(contentUrl);
+    const response = await fetch(contentUrl, fetchInfo);
     const result = await response.json();
     
     console.log(result);
@@ -75,7 +92,7 @@ mmm.getUserRepositories = async function(user) {
 mmm.getContent = async function(user, repo, filePath) {
     const contentUrl = mmm.githubApiUrl + "/repos/" + user + "/" + repo + "/contents/" + filePath;
     
-    const response = await fetch(contentUrl);
+    const response = await fetch(contentUrl, fetchInfo);
     const result = await response.json();
     
     console.log(result);
@@ -85,7 +102,7 @@ mmm.getContent = async function(user, repo, filePath) {
 mmm.getFileContent = async function(user, repo, filePath) {
     const fileContentUrl = mmm.githubApiUrl + "/repos/" + user + "/" + repo + "/contents/" + filePath;
     
-    const response = await fetch(fileContentUrl);
+    const response = await fetch(fileContentUrl, fetchInfo);
     const result = await response.json();
     const content = atob(result.content);
 
@@ -96,7 +113,7 @@ mmm.getFileContent = async function(user, repo, filePath) {
 mmm.getImageContent = async function(user, repo, filePath) {
     const fileContentUrl = mmm.githubApiUrl + "/repos/" + user + "/" + repo + "/contents/" + filePath;
     
-    const response = await fetch(fileContentUrl);
+    const response = await fetch(fileContentUrl, fetchInfo);
     const result = await response.json();
 
     console.log(result);
@@ -111,7 +128,8 @@ mmm.getSearchQuery = async function(type, query) {
         {
             method: "GET",
             headers: {
-                Accept: "application/vnd.github.mercy-preview+json"
+                Accept: "application/vnd.github.mercy-preview+json",
+                Authorization: "token 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" 
             }    
         }
     )
@@ -124,7 +142,7 @@ mmm.getSearchQuery = async function(type, query) {
 mmm.getFileCommitsInfo = async function(user, repo, filePath) {
     const fileContentUrl = mmm.githubApiUrl + "/repos/" + user + "/" + repo + "/commits?path=" + filePath;
     
-    const response = await fetch(fileContentUrl);
+    const response = await fetch(fileContentUrl, fetchInfo);
     const result = await response.json();
 
     console.log(result);
@@ -134,7 +152,7 @@ mmm.getFileCommitsInfo = async function(user, repo, filePath) {
 mmm.getFileCommitInfo = async function(user, repo, commitSha) {
     const fileContentUrl = mmm.githubApiUrl + "/repos/" + user + "/" + repo + "/commits/" + commitSha;
     
-    const response = await fetch(fileContentUrl);
+    const response = await fetch(fileContentUrl, fetchInfo);
     const result = await response.json();
 
     console.log(result);
@@ -144,7 +162,7 @@ mmm.getFileCommitInfo = async function(user, repo, commitSha) {
 mmm.getDirCommits = async function(user, repo) {
     const fileContentUrl = mmm.githubApiUrl + "/repos/" + user + "/" + repo + "/commits";
     
-    const response = await fetch(fileContentUrl);
+    const response = await fetch(fileContentUrl, fetchInfo);
     const result = await response.json();
 
     console.log(result);
@@ -154,7 +172,7 @@ mmm.getDirCommits = async function(user, repo) {
 mmm.getFileCommitContent = async function(user, repo, filePath, commitSha) {
     const fileContentUrl = mmm.githubApiUrl + "/repos/" + user + "/" + repo + "/contents/" + filePath + "?ref=" + commitSha;
     
-    const response = await fetch(fileContentUrl);
+    const response = await fetch(fileContentUrl, fetchInfo);
     const result = await response.json();
     const content = atob(result.content);
 
@@ -165,7 +183,7 @@ mmm.getFileCommitContent = async function(user, repo, filePath, commitSha) {
 mmm.getCommitActivity = async function(user, repo) {
     const fileContentUrl = mmm.githubApiUrl + "/repos/" + user + "/" + repo + "/stats/commit_activity";
     
-    const response = await fetch(fileContentUrl);
+    const response = await fetch(fileContentUrl, fetchInfo);
     const result = await response.json();
 
     console.log(result);
