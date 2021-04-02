@@ -58,7 +58,7 @@
         <link rel="stylesheet" href="css/default.min.css">
         <script src="js/three-mesh-ui.js"></script>
         <script src="js/prism.js"></script>
-        <script src="js/datguivr.min.js"></script>
+        <script src="js/datguivr.js"></script>
 
         <script src="js/OBJLoader.js"></script>
         <script src="js/WebVR.js"></script>
@@ -161,111 +161,14 @@ IMPL    scroll commit history
             scene.add(view.myGraph);
 
             controller = MVC.Controller;
-            controller.init('mouse', view);
-            //controller.init('vive', view);
+            //controller.init('mouse', view);
+            controller.init('vive', view);
 
             // test s GUI
             var baseGUI = view.createBaseGUI();
             scene.add(baseGUI);
             //camera.add(baseGUI);
             baseGUI.position.set(0,1,-1);
-
-            //view.createLayout(0, 0, 0, "sadsadsdsadsads.html");
-
-            //view.addTextContent(0, 0, 0, "sadsadsdsadsads.html");
-
-            //view.model.getFileContent("MartinSith", "Sandesriner", "js/VRCITY.controller.js").then(function(result) {
-            //    view.addScrollTextField(result, "js", 0, 0, 0, 5);
-            //});
-
-            /*view.model.getFileCommitsInfo("MartinSith", "JavaTestRepo", "onlineTest/OnlineTest.java").then(function(result) {
-                console.log(result);
-                result.forEach(commit => {
-                    var d = new Date(commit.commit.author.date);
-                    var date = d.getDate() + "." + ("0" + (d.getMonth()+1)).slice(-2) + "." + d.getFullYear() + " " + ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2) + ":" +  ("0" + d.getSeconds()).slice(-2);
-                    console.log(commit.commit.message + '\n' + commit.commit.author.name + '\n' + date + '\n' + commit.sha);
-                })
-            });*/
-
-            /*view.model.getFileCommitsInfo("MartinSith", "JavaTestRepo", "onlineTest/OnlineTest.java").then(function(result) {
-                var commitsInfo = [];
-
-                result.forEach(commit => {
-                    var date = new Date(commit.commit.author.date);
-                    date = date.toLocaleDateString('sk-SK', dateOptions);
-
-                    commitsInfo.push({
-                        message: commit.commit.message,
-                        author: commit.commit.author.name,
-                        date: date,
-                        sha: commit.sha
-                    });
-
-                });
-
-                var historyLayout = ccc.view.createHistoryLayout(0, 0, 0, commitsInfo);
-                scene.add(historyLayout);
-
-                console.log(scene);
-            });*/
-
-            /*view.model.getFileCommitContent("MartinSith", "JavaTestRepo", "onlineTest/OnlineTest.java", "811a133843762ba50d7b63d0ebba2b7534f4b58f").then(function(result) {
-                console.log(result);
-                ccc.view.addTextField(result, "java", 0, 0, 0);
-                //scene.add(textField);
-            });*/
-
-            //view.model.getCommitActivity("MartinSith", "JavaTestRepo/onlineTest");
-
-            /*view.model.getFileCommitInfo("MartinSith", "JavaTestRepo", "811a133843762ba50d7b63d0ebba2b7534f4b58f").then(function(result) {
-                console.log(result);
-                var tokens = view.addTextContentTokens(result.files[0].patch, result.files[0].filename.split('.').pop());
-                var content = view.addDiffTextContent(tokens, 0);
-                content.position.set(0, 0, 0);
-                scene.add(content);
-            });*/
-
-            /*view.model.getFileCommitInfo("MartinSith", "JavaTestRepo", "811a133843762ba50d7b63d0ebba2b7534f4b58f").then(function(result) {
-                var tokens = view.addTextContentTokens(result.files[0].patch, result.files[0].filename.split('.').pop());
-
-                var layout = ccc.view.createLayout(0, 0, 0);
-                var layoutHeaderTitle = layout.children.filter(obj => { return obj.name == "layoutHeader" })[0].children.filter(obj => { return obj.name == "layoutHeaderTitle" })[0];
-                layoutHeaderTitle.add(
-                    new ThreeMeshUI.Text({
-                        fontSize: 0.05,
-                        fontColor: new THREE.Color( 0x000000 ),
-                        content: "OnlineTest.java (Zmena 2)"
-                    })
-                );
-
-                var content = view.addDiffTextContent(tokens, 0);
-                var layoutContent = layout.children.filter(obj => { return obj.name == "layoutContent" })[0];
-                layoutContent.add(content);
-
-                layout.position.set(0, 0, 0);
-                scene.add(layout);
-            });*/
-
-            /*view.model.getFileContent("MartinSith", "Sandesriner", "city.html").then(function(result) {
-                var tokens = view.addTextContentTokens(result, "html");
-
-                var layout = ccc.view.createLayout(0, 0, 0);
-                var layoutHeaderTitle = layout.children.filter(obj => { return obj.name == "layoutHeader" })[0].children.filter(obj => { return obj.name == "layoutHeaderTitle" })[0];
-                layoutHeaderTitle.add(
-                    new ThreeMeshUI.Text({
-                        fontSize: 0.05,
-                        fontColor: new THREE.Color( 0x000000 ),
-                        content: "city.html"
-                    })
-                );
-
-                var content = ccc.view.addTextContent(tokens, 0);
-                var layoutContent = layout.children.filter(obj => { return obj.name == "layoutContent" })[0];
-                layoutContent.add(content);
-
-                layout.position.set(0, 0, 0);
-                scene.add(layout);
-            });*/
 
             //camera.lookAt(view.myGraph.position);
             scene.add(new THREE.AmbientLight(0x333333));
@@ -362,9 +265,9 @@ IMPL    scroll commit history
                 //const guiInputRight = dat.GUIVR.addInputObject( controller2 );
                 //scene.add( guiInputRight );
 
-                controller1.addEventListener( 'menudown', ()=>toggleVR() );
+                //controller1.addEventListener( 'menudown', ()=>toggleVR() );
 
-                dat.GUIVR.enableMouse( camera, renderer );
+                //dat.GUIVR.enableMouse( camera, renderer );
             }
 
             function updateNodeAfterChange() {}

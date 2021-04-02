@@ -21001,10 +21001,11 @@
                                     backgroundTexture: t
                                 }))
                             })
-                        } else r.add(new a.a({
-                            content: l,
-                            offset: 0
-                        }));
+                        } else r.add(//new a.a({
+                            //content: l,
+                            //offset: 0
+                        //}));
+						new dat.GUIVR.addTextMesh( l));
                         r.type = "Key", r.info = e, r.info.input = l, r.panel = i, o.push(r), this.keys.push(r)
                     }), r.add(...o), r
                 })), i

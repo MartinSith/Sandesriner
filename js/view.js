@@ -1434,7 +1434,6 @@ function makeUI() {
     container.add( textPanel );
 
     //
-
     const title = new ThreeMeshUI.Block({
     	width: 1,
     	height: 0.1,
@@ -1442,8 +1441,14 @@ function makeUI() {
     	fontSize: 0.045,
     	backgroundOpacity: 0
     }).add(
-    	new ThreeMeshUI.Text({ content: 'Type search query on the keyboard' })
+        new dat.GUIVR.addTextMesh( "Type search query on the keyboard", { color: 0xffffff, scale: 1.0, align: 'left' })
     );
+
+    /*console.log(title);
+    var x = title.children[2].inlines[0].offsetX;
+    var y = title.children[2].inlines[0].offsetY;
+    mesh.position.x += x;
+    mesh.position.y += y;*/
 
     userText = new ThreeMeshUI.Text({ content: '', queryType: '' });
 
@@ -1493,11 +1498,12 @@ function makeUI() {
 	  		backgroundOpacity: 1
     	}).add(
 
-    		new ThreeMeshUI.Text({
-    			offset: 0,
-    			fontSize: 0.035,
-    			content: options[ 0 ]
-    		})
+    		//new ThreeMeshUI.Text({
+    		//	offset: 0,
+    		//	fontSize: 0.035,
+    		//	content: options[ 0 ]
+    		//})
+            new dat.GUIVR.addTextMesh( options[0], { color: 0xffffff, scale: 1.0, align: 'left' })
 
     	);
 
@@ -1589,10 +1595,11 @@ function makeUI() {
     		backgroundOpacity: 0
 	  	}).add(
 
-	  		new ThreeMeshUI.Text({
-	  			fontSize: 0.04,
-	  			content: 'Help to search query:'
-	  		})
+	  		//new ThreeMeshUI.Text({
+	  		//	fontSize: 0.04,
+	  		//	content: 'Help to search query:'
+	  		//}),
+            new dat.GUIVR.addTextMesh( "Help to search query:", { color: 0xffffff, scale: 1.0, align: 'left' })
 
 	  	),
 
@@ -1634,10 +1641,11 @@ function makeUI() {
     		backgroundOpacity: 0
 	  	}).add(
 
-	  		new ThreeMeshUI.Text({
-	  			fontSize: 0.03,
-	  			content: 'Example: tetris+language:assembly&sort=stars&order=desc'
-	  		})
+	  		//new ThreeMeshUI.Text({
+	  		//	fontSize: 0.03,
+	  		//	content: 'Example: tetris+language:assembly&sort=stars&order=desc'
+	  		//}),
+            new dat.GUIVR.addTextMesh( "Example: tetris+language:assembly&sort=stars&order=desc", { color: 0xffffff, scale: 1.0, align: 'left' })
 
 	  	)
 

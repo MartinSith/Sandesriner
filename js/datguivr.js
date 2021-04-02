@@ -3336,6 +3336,21 @@ var GUIVR = function DATGUIVR() {
   /*
     Here are the main dat gui controller types.
   */
+  
+  // sith
+  function addTextMesh(str) {
+	if (arguments.length > 1 && arguments[1] !== undefined)
+	  var group = textCreator.create(str, arguments[1]);
+	else 
+	  var group = textCreator.create(str);
+  
+	//return group;
+	var mesh = group.children[0];
+	mesh.position.x -= group.computeWidth() / 2;
+	mesh.position.z += 0.01;
+	mesh.position.y -= 0.035;
+	return mesh;
+  }
 
   function addSlider(object, propertyName) {
     var min = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0.0;
@@ -3822,6 +3837,7 @@ var GUIVR = function DATGUIVR() {
   var publicInterface = {
     create: create,
     addInputObject: addInputObject,
+	addTextMesh: addTextMesh,
     enableMouse: enableMouse,
     disableMouse: disableMouse,
     textCreator: textCreator, //cheap way of exposing this so it can be used by host application.
@@ -4691,11 +4707,12 @@ function creator() {
     var scale = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 1.0;
     var width = arguments[4];
     var height = arguments[5];
+	var align = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : 'left';
 
 
     var geometry = (0, _threeBmfontText2.default)({
       text: str,
-      align: 'left',
+      align: align,
       width: width,
       height: height,
       flipY: true,
@@ -4725,11 +4742,13 @@ function creator() {
         _ref$color = _ref.color,
         color = _ref$color === undefined ? 0xffffff : _ref$color,
         _ref$scale = _ref.scale,
-        scale = _ref$scale === undefined ? 1.0 : _ref$scale;
+        scale = _ref$scale === undefined ? 1.0 : _ref$scale,
+		_ref$align = _ref.align,
+        align = _ref$align === undefined ? 'left' : _ref$align;
 
     var group = new THREE.Group();
 
-    var mesh = createText(str, font, color, scale);
+    var mesh = createText(str, font, color, scale, null, null, align);
     group.add(mesh);
     group.layout = mesh.geometry.layout;
     group.computeWidth = function () {
@@ -4742,11 +4761,11 @@ function creator() {
     group.constrainBounds = function (w, h) {
       group.remove(mesh);
       var s = Layout.TEXT_SCALE;
-      mesh = createText(str, font, color, scale, w / s, h / s);
+      mesh = createText(str, font, color, scale, w / s, h / s, align);
       var hFactor = mesh.geometry.layout.height * s / h;
       if (hFactor > 1) {
         str = str.substring(0, 0.95 * str.length / hFactor) + '...';
-        mesh = createText(str, font, color, scale, w / s, h / s);
+        mesh = createText(str, font, color, scale, w / s, h / s, align);
       }
       group.add(mesh);
       group.layout = mesh.geometry.layout;
