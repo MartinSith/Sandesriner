@@ -3346,9 +3346,13 @@ var GUIVR = function DATGUIVR() {
   
 	//return group;
 	var mesh = group.children[0];
-	mesh.position.x -= group.computeWidth() / 2;
+  console.log(arguments[1].position);
+  if (arguments[1].position == "center") {
+	  mesh.position.x -= group.computeWidth() / 2;
+  }
 	mesh.position.z += 0.01;
 	mesh.position.y -= 0.035;
+  mesh.userData.width = group.computeWidth();
 	return mesh;
   }
 
@@ -4707,7 +4711,7 @@ function creator() {
     var scale = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 1.0;
     var width = arguments[4];
     var height = arguments[5];
-	var align = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : 'left';
+	  var align = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : 'left';
 
 
     var geometry = (0, _threeBmfontText2.default)({
@@ -4751,8 +4755,16 @@ function creator() {
     var mesh = createText(str, font, color, scale, null, null, align);
     group.add(mesh);
     group.layout = mesh.geometry.layout;
+    //sith
     group.computeWidth = function () {
-      return group.layout.width * scale * Layout.TEXT_SCALE;
+      var width = group.layout.width * scale * Layout.TEXT_SCALE;
+      if (width == 0) {
+        //console.log("pocet: " + (group.layout._opt.text.match(/ /g) || []).length);
+        return (group.layout._opt.text.match(/ /g) || []).length * scale * Layout.TEXT_SCALE * 100;
+      }
+      else {
+        return group.layout.width * scale * Layout.TEXT_SCALE;
+      }
     };
     group.computeHeight = function () {
       return group.layout.height * scale * Layout.TEXT_SCALE;

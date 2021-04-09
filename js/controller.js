@@ -187,7 +187,7 @@ ccc.viveController = function() {
             // ak je to znak na klavesnici a Enter
             if (intersects.object.type == 'Key') {
                 if (intersects.object.info.input == 'enter') {
-                    ccc.view.model.getSearchQuery("repositories", userText.content).then(function(result) {
+                    ccc.view.model.getSearchQuery("repositories", newUserText).then(function(result) {
                         console.log("result");
                         console.log(result);
                         if(result.total_count > 0) {
@@ -248,11 +248,12 @@ ccc.viveController = function() {
                     var layout = ccc.view.createLayout(0, 0, 0);
                     var layoutHeaderTitle = layout.children.filter(obj => { return obj.name == "layoutHeader" })[0].children.filter(obj => { return obj.name == "layoutHeaderTitle" })[0];
                     layoutHeaderTitle.add(
-                        new ThreeMeshUI.Text({
+                        new dat.GUIVR.addTextMesh(node.__data.name, { color: 0xffffff, scale: 1.0, align: 'center', position: "center"})
+                        /*new ThreeMeshUI.Text({
                             fontSize: 0.05,
                             fontColor: new THREE.Color( 0x000000 ),
                             content: node.__data.name
-                        })
+                        })*/
                     );
 
                     var content = ccc.view.addTextContent(commitInfo.contentTokens, 0);
@@ -372,16 +373,17 @@ ccc.viveController = function() {
                     intersects.object.__data.oldY = intersects.object.__data.y;
                     intersects.object.__data.oldZ = intersects.object.__data.z;
 
-                    var nodeInfoBlock = scene.children.filter(obj => { return obj.name == "baseGUI" })[0].children.filter(obj => { return obj.name == "nodeInfoBlock" })[0];
-                    nodeInfoBlock.remove(nodeInfoBlock.children.filter(obj => { return obj.name == "nodeInfoSubBlock" })[0]);
+                    var nodeInfoSubBlock = scene.children.filter(obj => { return obj.name == "baseGUI" })[0].children.filter(obj => { return obj.name == "nodeInfoBlock" })[0].children.filter(obj => { return obj.name == "nodeInfoSubBlock" })[0];
+                    //nodeInfoBlock.remove(nodeInfoBlock.children.filter(obj => { return obj.name == "nodeInfoSubBlock" })[0]);
+                    console.log(nodeInfoSubBlock);
 
-                    if (clickedNode.__data.repoInfo) {
+                    /*if (clickedNode.__data.repoInfo) {
                         var nodeInfoSubBlock = ccc.view.addRepoInfoSubBlock(clickedNode);
                     }
                     else {
                         var nodeInfoSubBlock = ccc.view.addNodeInfoSubBlock(clickedNode);
                     }
-                    nodeInfoBlock.add(nodeInfoSubBlock);
+                    nodeInfoBlock.add(nodeInfoSubBlock);*/
 
                     if (GUIsettings.clickedNode != null) {
                         var node = GUIsettings.clickedNode;
@@ -457,11 +459,12 @@ ccc.viveController = function() {
                             var layout = ccc.view.createLayout(0, 0, 0);
                             var layoutHeaderTitle = layout.children.filter(obj => { return obj.name == "layoutHeader" })[0].children.filter(obj => { return obj.name == "layoutHeaderTitle" })[0];
                             layoutHeaderTitle.add(
-                                new ThreeMeshUI.Text({
+                                new dat.GUIVR.addTextMesh(intersects.object.__data.name, { color: 0xffffff, scale: 1.0, align: 'center', position: "center"})
+                                /*new ThreeMeshUI.Text({
                                     fontSize: 0.05,
                                     fontColor: new THREE.Color( 0x000000 ),
                                     content: intersects.object.__data.name
-                                })
+                                })*/
                             );
 
                             var content = ccc.view.addImageContent(result.content);
@@ -488,11 +491,12 @@ ccc.viveController = function() {
                                 var layout = ccc.view.createLayout(0, 0, 0);
                                 var layoutHeaderTitle = layout.children.filter(obj => { return obj.name == "layoutHeader" })[0].children.filter(obj => { return obj.name == "layoutHeaderTitle" })[0];
                                 layoutHeaderTitle.add(
-                                    new ThreeMeshUI.Text({
+                                    new dat.GUIVR.addTextMesh(intersects.object.__data.name, { color: 0xffffff, scale: 1.0, align: 'center', position: "center"})
+                                    /*new ThreeMeshUI.Text({
                                         fontSize: 0.05,
                                         fontColor: new THREE.Color( 0x000000 ),
                                         content: intersects.object.__data.name
-                                    })
+                                    })*/
                                 );
 
                                 var content = ccc.view.addTextContent(intersects.object.__data.fileContentTokens, 0);
@@ -553,7 +557,7 @@ ccc.mouse = function() {
 
             if (keyboardIntersect.object.type == 'Key') {
                 if (keyboardIntersect.object.info.input == 'enter') {
-                    ccc.view.model.getSearchQuery(/*userText.queryType*/"repositories", userText.content).then(function(result) {
+                    ccc.view.model.getSearchQuery("repositories", newUserText).then(function(result) {
                         console.log("result");
                         console.log(result);
                         if(result.total_count > 0) {
@@ -614,11 +618,12 @@ ccc.mouse = function() {
                     var layout = ccc.view.createLayout(0, 0, 0);
                     var layoutHeaderTitle = layout.children.filter(obj => { return obj.name == "layoutHeader" })[0].children.filter(obj => { return obj.name == "layoutHeaderTitle" })[0];
                     layoutHeaderTitle.add(
-                        new ThreeMeshUI.Text({
+                        new dat.GUIVR.addTextMesh(node.__data.name, { color: 0xffffff, scale: 1.0, align: 'center', position: "center"})
+                        /*new ThreeMeshUI.Text({
                             fontSize: 0.05,
                             fontColor: new THREE.Color( 0x000000 ),
                             content: node.__data.name
-                        })
+                        })*/
                     );
 
                     var content = ccc.view.addTextContent(commitInfo.contentTokens, 0);
@@ -747,16 +752,20 @@ ccc.mouse = function() {
                 intersects[0].object.__data.oldY = intersects[0].object.__data.y;
                 intersects[0].object.__data.oldZ = intersects[0].object.__data.z;
 
-                var nodeInfoBlock = scene.children.filter(obj => { return obj.name == "baseGUI" })[0].children.filter(obj => { return obj.name == "nodeInfoBlock" })[0];
-                nodeInfoBlock.remove(nodeInfoBlock.children.filter(obj => { return obj.name == "nodeInfoSubBlock" })[0]);
+                var textMesh = scene.children.filter(obj => { return obj.name == "baseGUI" })[0]
+                                            .children.filter(obj => { return obj.name == "nodeInfoBlock" })[0]
+                                            .children.filter(obj => { return obj.name == "nodeInfoSubBlock" })[0]
+                                            .children.filter(obj => { return obj.type == "Mesh" })[0];
+                //nodeInfoBlock.remove(nodeInfoBlock.children.filter(obj => { return obj.name == "nodeInfoSubBlock" })[0]);
+                textMesh.geometry.update(ccc.view.updateRepoInfo(clickedNode));
 
-                if (clickedNode.__data.repoInfo) {
+                /*if (clickedNode.__data.repoInfo) {
                     var nodeInfoSubBlock = ccc.view.addRepoInfoSubBlock(clickedNode);
                 }
                else {
                     var nodeInfoSubBlock = ccc.view.addNodeInfoSubBlock(clickedNode);
                 }
-                nodeInfoBlock.add(nodeInfoSubBlock);
+                nodeInfoBlock.add(nodeInfoSubBlock);*/
 
                 //var nodeLayout = ccc.view.createNodeLayout(0, -0.115, 0.01, intersects[0].object.__data.repoInfo);
                 //intersects[0].object.add(nodeLayout);
@@ -816,11 +825,12 @@ ccc.mouse = function() {
                         var layout = ccc.view.createLayout(0, 0, 0);
                         var layoutHeaderTitle = layout.children.filter(obj => { return obj.name == "layoutHeader" })[0].children.filter(obj => { return obj.name == "layoutHeaderTitle" })[0];
                         layoutHeaderTitle.add(
-                            new ThreeMeshUI.Text({
+                            new dat.GUIVR.addTextMesh(intersects[0].object.__data.name, { color: 0xffffff, scale: 1.0, align: 'center', position: "center"})
+                            /*new ThreeMeshUI.Text({
                                 fontSize: 0.05,
                                 fontColor: new THREE.Color( 0x000000 ),
                                 content: intersects[0].object.__data.name
-                            })
+                            })*/
                         );
 
                         var content = ccc.view.addImageContent(result.content);
@@ -847,11 +857,12 @@ ccc.mouse = function() {
                             var layout = ccc.view.createLayout(0, 0, 0);
                             var layoutHeaderTitle = layout.children.filter(obj => { return obj.name == "layoutHeader" })[0].children.filter(obj => { return obj.name == "layoutHeaderTitle" })[0];
                             layoutHeaderTitle.add(
-                                new ThreeMeshUI.Text({
+                                new dat.GUIVR.addTextMesh(intersects[0].object.__data.name, { color: 0xffffff, scale: 1.0, align: 'center', position: "center"})
+                                /*new ThreeMeshUI.Text({
                                     fontSize: 0.05,
                                     fontColor: new THREE.Color( 0x000000 ),
                                     content: intersects[0].object.__data.name
-                                })
+                                })*/
                             );
 
                             var content = ccc.view.addTextContent(intersects[0].object.__data.fileContentTokens, 0);

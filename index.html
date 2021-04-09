@@ -22,6 +22,8 @@
             var textFieldWidth = 1.2;
             var fontFilesName = 'consola';
             var globalTwoControllers = false;
+            var newUserText = "";
+            var newUserTextMesh;
             const dateOptions = { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' };
             var GUIsettings = {
                 'clickedNode': null,
@@ -75,12 +77,12 @@
 
         <!-- TO DO LIST
         expand/invisible nodes - len opravit, lebo fungovalo
-IMPL    teleport - bud k nodom - 1 meter, alebo pohyb ako WADS
-IMPL    scroll commit history
-        sfunkcnit dat.guiVR - stale nejde
-        scale na photony
+        presahovanie textu za okraj (pridat newline)
+        rovnako velke znaky, zmena fontu
 
-        cmajznut lejzer z dat gui vr
+DONE    velkost photonov a linkov
+DONE    zmena textu
+        
 
         -->
 		<script type="module">
@@ -161,8 +163,8 @@ IMPL    scroll commit history
             scene.add(view.myGraph);
 
             controller = MVC.Controller;
-            //controller.init('mouse', view);
-            controller.init('vive', view);
+            controller.init('mouse', view);
+            //controller.init('vive', view);
 
             // test s GUI
             var baseGUI = view.createBaseGUI();
@@ -175,6 +177,22 @@ IMPL    scroll commit history
             const directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
             directionalLight.position.set( 0, 1, 0.5 );
             scene.add( directionalLight );
+
+            /*view.model.getFileContent("MartinSith", "Sandesriner", "index.html").then(function(result) {
+                var fileContentTokens = view.addTextContentTokens(result, "html");
+
+                var layout = view.createLayout(0, 0, 0);
+                var layoutHeaderTitle = layout.children.filter(obj => { return obj.name == "layoutHeader" })[0].children.filter(obj => { return obj.name == "layoutHeaderTitle" })[0];
+                layoutHeaderTitle.add(
+                    new dat.GUIVR.addTextMesh( "index.html", { color: 0xffffff, scale: 1.0, align: 'left' })
+                );
+
+                var content = view.addTextContent(fileContentTokens, 0);
+                var layoutContent = layout.children.filter(obj => { return obj.name == "layoutContent" })[0];
+                layoutContent.add(content);
+
+                scene.add(layout);
+            });*/
 
             function addToFolder(object, folder) {
                 for (var k in object) {
@@ -265,9 +283,9 @@ IMPL    scroll commit history
                 //const guiInputRight = dat.GUIVR.addInputObject( controller2 );
                 //scene.add( guiInputRight );
 
-                //controller1.addEventListener( 'menudown', ()=>toggleVR() );
+                controller1.addEventListener( 'menudown', ()=>toggleVR() );
 
-                //dat.GUIVR.enableMouse( camera, renderer );
+                dat.GUIVR.enableMouse( camera, renderer );
             }
 
             function updateNodeAfterChange() {}

@@ -7,6 +7,231 @@ vvv._graphData;
 vvv.myGraph;
 vvv.model;
 
+var Languages = /*languages_placeholder[*/{
+    "none": "Plain text",
+    "plain": "Plain text",
+    "plaintext": "Plain text",
+    "text": "Plain text",
+    "txt": "Plain text",
+    "html": "HTML",
+    "xml": "XML",
+    "svg": "SVG",
+    "mathml": "MathML",
+    "ssml": "SSML",
+    "rss": "RSS",
+    "css": "CSS",
+    "clike": "C-like",
+    "js": "JavaScript",
+    "abap": "ABAP",
+    "abnf": "ABNF",
+    "al": "AL",
+    "antlr4": "ANTLR4",
+    "g4": "ANTLR4",
+    "apacheconf": "Apache Configuration",
+    "apl": "APL",
+    "aql": "AQL",
+    "arff": "ARFF",
+    "asciidoc": "AsciiDoc",
+    "adoc": "AsciiDoc",
+    "aspnet": "ASP.NET (C#)",
+    "asm6502": "6502 Assembly",
+    "autohotkey": "AutoHotkey",
+    "autoit": "AutoIt",
+    "basic": "BASIC",
+    "bbcode": "BBcode",
+    "bnf": "BNF",
+    "rbnf": "RBNF",
+    "bsl": "BSL (1C:Enterprise)",
+    "oscript": "OneScript",
+    "csharp": "C#",
+    "cs": "C#",
+    "dotnet": "C#",
+    "cpp": "C++",
+    "cfscript": "CFScript",
+    "cfc": "CFScript",
+    "cil": "CIL",
+    "cmake": "CMake",
+    "cobol": "COBOL",
+    "coffee": "CoffeeScript",
+    "conc": "Concurnas",
+    "csp": "Content-Security-Policy",
+    "css-extras": "CSS Extras",
+    "csv": "CSV",
+    "dataweave": "DataWeave",
+    "dax": "DAX",
+    "django": "Django/Jinja2",
+    "jinja2": "Django/Jinja2",
+    "dns-zone-file": "DNS zone file",
+    "dns-zone": "DNS zone file",
+    "dockerfile": "Docker",
+    "dot": "DOT (Graphviz)",
+    "gv": "DOT (Graphviz)",
+    "ebnf": "EBNF",
+    "editorconfig": "EditorConfig",
+    "ejs": "EJS",
+    "etlua": "Embedded Lua templating",
+    "erb": "ERB",
+    "excel-formula": "Excel Formula",
+    "xlsx": "Excel Formula",
+    "xls": "Excel Formula",
+    "fsharp": "F#",
+    "firestore-security-rules": "Firestore security rules",
+    "ftl": "FreeMarker Template Language",
+    "gml": "GameMaker Language",
+    "gamemakerlanguage": "GameMaker Language",
+    "gcode": "G-code",
+    "gdscript": "GDScript",
+    "gedcom": "GEDCOM",
+    "glsl": "GLSL",
+    "graphql": "GraphQL",
+    "hs": "Haskell",
+    "hcl": "HCL",
+    "hlsl": "HLSL",
+    "http": "HTTP",
+    "hpkp": "HTTP Public-Key-Pins",
+    "hsts": "HTTP Strict-Transport-Security",
+    "ichigojam": "IchigoJam",
+    "icu-message-format": "ICU Message Format",
+    "idr": "Idris",
+    "ignore": ".ignore",
+    "gitignore": ".gitignore",
+    "hgignore": ".hgignore",
+    "npmignore": ".npmignore",
+    "inform7": "Inform 7",
+    "javadoc": "JavaDoc",
+    "javadoclike": "JavaDoc-like",
+    "javastacktrace": "Java stack trace",
+    "jq": "JQ",
+    "jsdoc": "JSDoc",
+    "js-extras": "JS Extras",
+    "json": "JSON",
+    "webmanifest": "Web App Manifest",
+    "json5": "JSON5",
+    "jsonp": "JSONP",
+    "jsstacktrace": "JS stack trace",
+    "js-templates": "JS Templates",
+    "kts": "Kotlin Script",
+    "kt": "Kotlin",
+    "kumir": "KuMir (КуМир)",
+    "kum": "KuMir (КуМир)",
+    "latex": "LaTeX",
+    "tex": "TeX",
+    "context": "ConTeXt",
+    "lilypond": "LilyPond",
+    "ly": "LilyPond",
+    "emacs": "Lisp",
+    "elisp": "Lisp",
+    "emacs-lisp": "Lisp",
+    "llvm": "LLVM IR",
+    "log": "Log file",
+    "lolcode": "LOLCODE",
+    "md": "Markdown",
+    "markup-templating": "Markup templating",
+    "matlab": "MATLAB",
+    "mel": "MEL",
+    "mongodb": "MongoDB",
+    "moon": "MoonScript",
+    "n1ql": "N1QL",
+    "n4js": "N4JS",
+    "n4jsd": "N4JS",
+    "nand2tetris-hdl": "Nand To Tetris HDL",
+    "naniscript": "Naninovel Script",
+    "nani": "Naninovel Script",
+    "nasm": "NASM",
+    "neon": "NEON",
+    "nginx": "nginx",
+    "nsis": "NSIS",
+    "objectivec": "Objective-C",
+    "objc": "Objective-C",
+    "ocaml": "OCaml",
+    "opencl": "OpenCL",
+    "openqasm": "OpenQasm",
+    "qasm": "OpenQasm",
+    "parigp": "PARI/GP",
+    "objectpascal": "Object Pascal",
+    "psl": "PATROL Scripting Language",
+    "pcaxis": "PC-Axis",
+    "px": "PC-Axis",
+    "peoplecode": "PeopleCode",
+    "pcode": "PeopleCode",
+    "php": "PHP",
+    "phpdoc": "PHPDoc",
+    "php-extras": "PHP Extras",
+    "plsql": "PL/SQL",
+    "powerquery": "PowerQuery",
+    "pq": "PowerQuery",
+    "mscript": "PowerQuery",
+    "powershell": "PowerShell",
+    "promql": "PromQL",
+    "properties": ".properties",
+    "protobuf": "Protocol Buffers",
+    "purebasic": "PureBasic",
+    "pbfasm": "PureBasic",
+    "purs": "PureScript",
+    "py": "Python",
+    "qsharp": "Q#",
+    "qs": "Q#",
+    "q": "Q (kdb+ database)",
+    "qml": "QML",
+    "rkt": "Racket",
+    "jsx": "React JSX",
+    "tsx": "React TSX",
+    "renpy": "Ren'py",
+    "rpy": "Ren'py",
+    "rest": "reST (reStructuredText)",
+    "robotframework": "Robot Framework",
+    "robot": "Robot Framework",
+    "rb": "Ruby",
+    "sas": "SAS",
+    "sass": "Sass (Sass)",
+    "scss": "Sass (Scss)",
+    "shell-session": "Shell session",
+    "sh-session": "Shell session",
+    "shellsession": "Shell session",
+    "sml": "SML",
+    "smlnj": "SML/NJ",
+    "solidity": "Solidity (Ethereum)",
+    "sol": "Solidity (Ethereum)",
+    "solution-file": "Solution file",
+    "sln": "Solution file",
+    "soy": "Soy (Closure Template)",
+    "sparql": "SPARQL",
+    "rq": "SPARQL",
+    "splunk-spl": "Splunk SPL",
+    "sqf": "SQF: Status Quo Function (Arma 3)",
+    "sql": "SQL",
+    "iecst": "Structured Text (IEC 61131-3)",
+    "t4-templating": "T4 templating",
+    "t4-cs": "T4 Text Templates (C#)",
+    "t4": "T4 Text Templates (C#)",
+    "t4-vb": "T4 Text Templates (VB)",
+    "tap": "TAP",
+    "tt2": "Template Toolkit 2",
+    "toml": "TOML",
+    "trig": "TriG",
+    "ts": "TypeScript",
+    "tsconfig": "TSConfig",
+    "uscript": "UnrealScript",
+    "uc": "UnrealScript",
+    "uri": "URI",
+    "url": "URL",
+    "vbnet": "VB.Net",
+    "vhdl": "VHDL",
+    "vim": "vim",
+    "visual-basic": "Visual Basic",
+    "vba": "VBA",
+    "vb": "Visual Basic",
+    "wasm": "WebAssembly",
+    "wiki": "Wiki markup",
+    "xeoracube": "XeoraCube",
+    "xml-doc": "XML doc (.net)",
+    "xojo": "Xojo (REALbasic)",
+    "xquery": "XQuery",
+    "yaml": "YAML",
+    "yml": "YAML",
+    "yang": "YANG"
+}/*]*/;
+
 vvv.init = function(model) {
     vvv._graphData = model.graphData;
     vvv.model = model;
@@ -18,11 +243,11 @@ vvv.initGraph = function() {
             .dagMode('td')
             .dagLevelDistance(0.4)
             .linkColor(() => 'rgba(255,255,255,0.2)')
-            .linkWidth(0.01)
-            .linkOpacity(0.2)
+            .linkWidth(0.02)
+            .linkOpacity(0.4)
             .linkDirectionalParticles(1)
             .linkDirectionalParticleSpeed('particleSpeed')
-            .linkDirectionalParticleWidth(0.01)
+            .linkDirectionalParticleWidth(0.04)
             //.linkDirectionalParticleColor()
             .nodeRelSize(10)
             .nodeId('path')
@@ -34,7 +259,9 @@ vvv.initGraph = function() {
                 if (node.type == 'dir') {
                     var object = new THREE.BoxGeometry(node.nodeSize, node.nodeSize, node.nodeSize);
                     if (node.repoInfo) {
-                        var material = new THREE.MeshLambertMaterial({ map: vvv.createRepoNodeTexture(node.name), depthWrite: true, transparent: false, opacity: 0 });
+                        var language = Object.keys(Languages).find(key => Languages[key] === node.repoInfo.language);
+                        if (!language) language = node.repoInfo.language;
+                        var material = new THREE.MeshLambertMaterial({ map: vvv.createRepoNodeTexture(language, node.color ), depthWrite: true, transparent: false, opacity: 0, color: node.color });
                         material.map.minFilter = THREE.LinearFilter;
                     } else {
                         var material = new THREE.MeshLambertMaterial({depthWrite: true, transparent: false, opacity: 0, color: node.color });
@@ -74,7 +301,7 @@ vvv.initGraph = function() {
     //vvv._graphData.nodes[0].fy = 2;
 }
 
-vvv.createRepoNodeTexture = function(text) {
+vvv.createRepoNodeTexture = function(text, color) {
     var canvas,
         context,
         metrics = null,
@@ -82,19 +309,21 @@ vvv.createRepoNodeTexture = function(text) {
         textWidth = 0;
 
     canvas = document.createElement('canvas'),
-    context = canvas.getContext('2d');
+    context = canvas.getContext('2d');  
 
     metrics = context.measureText(text);
     var textWidth = metrics.width * 10;
-    console.log(textWidth);
+
+    //context.fillStyle = '#fff';
+    //context.fillRect(0, 0, textWidth, textHeight);
 
     canvas.width = textWidth;
     canvas.height = textHeight;
-    canvas.color = "#FFFF00";
+    canvas.color = "#00FF00";
     context.font = "normal " + textHeight + "px Arial";
     context.textAlign = "center";
     context.textBaseline = "middle";
-    context.fillStyle = "#FF0000";
+    context.fillStyle = color;
     context.fillText(text, canvas.width / 2, canvas.height / 2);
 
     var texture = new THREE.Texture(canvas);
@@ -309,7 +538,7 @@ vvv.updateGraph = function(data, node) {
             commitCount = commitInfo.length;
 
             var particleSpeed = Math.round(commitCount / clickedNode.__data.commitCount * 0.1 * 100) / 100 / 3;
-            console.log("particleSpeed: " + particleSpeed);
+            //console.log("particleSpeed: " + particleSpeed);
 
             var repoCreatedDate = new Date(nodes.filter(obj => { return obj.name == clickedNode.__data.repository })[0].repoInfo.createdDate);
             var nodeLastUpdateDate = new Date(lastUpdateDate);
@@ -319,7 +548,7 @@ vvv.updateGraph = function(data, node) {
             const daysUntilToday = Math.round(Math.abs((repoCreatedDate - currentDate) / oneDay));
             const daysFromTodayToLastUpdate = Math.round(Math.abs((nodeLastUpdateDate - currentDate) / oneDay));
 
-            console.log(daysUntilToday  + " " + daysFromTodayToLastUpdate);
+            //console.log(daysUntilToday  + " " + daysFromTodayToLastUpdate);
 
             var colorGreenValue = Math.round(daysFromTodayToLastUpdate / daysUntilToday * 255);
 
@@ -332,7 +561,7 @@ vvv.updateGraph = function(data, node) {
             }
             nodeColor = "#FF" + colorGreenHexValue + "00";
 
-            console.log(colorGreenValue  + " " + nodeColor);
+            //console.log(colorGreenValue  + " " + nodeColor);
 
             if (type == "dir") {
                 var nodeSize = minValue;
@@ -341,6 +570,7 @@ vvv.updateGraph = function(data, node) {
                 var nodeSize = size / max  * maxValue;
                 if (nodeSize < minValue) nodeSize = minValue;
             }
+            //console.log("nodeSize: " + nodeSize);
 
             const levels = path.split('/'),
                 level = levels.length,
@@ -654,20 +884,32 @@ vvv.addTextContent = function(tokenRows, scrollRow) {
         fontFamily: './js/' + fontFilesName + '.json',
         fontTexture: './js/' + fontFilesName + '.png',
         interLine: 0,
-        alignContent: "left",
+        //alignContent: "left",
         backgroundOpacity: 0,
         name: "fileContentContainer"
     });
 
+    var mesh, x = 0.02, y = 0.02;
+
     for (i = scrollRow; i < scrollRow + textFieldSize; i++) {
         if (i < tokenRows.length) {
             tokenRows[i].forEach(token => {
+                mesh = dat.GUIVR.addTextMesh( token.content, { color: token.fontColor, scale: 1.0, align: 'left' });
+                mesh.position.x -= 0.91 - x;
+                mesh.position.y += 0.42 - y;
+                if (token.content.includes("\n")) {
+                    y += 0.045;
+                    x = 0.02;
+                }
+                x += mesh.userData.width;
+
                 container.add(
-                    new ThreeMeshUI.Text({
+                    mesh,
+                    /*new ThreeMeshUI.Text({
                         fontSize: 0.035,
                         fontColor: new THREE.Color(token.fontColor),
                         content: token.content
-                    })
+                    })*/
                 );
                 
             })
@@ -816,7 +1058,14 @@ createNodeInfo = function(width, height, info) {
         alignContent: "left",
         backgroundOpacity: 0,
     }).add(
-        new ThreeMeshUI.Text({
+        new dat.GUIVR.addTextMesh( "owner: " + info.owner + "\n"
+                                 + "name: " + info.name + "\n" 
+                                 + "language: " + info.language + "\n"
+                                 + "size: " + info.size + "\n"    
+                                 + "created: " + createdDate.toLocaleDateString('sk-SK', dateOptions) + "\n"
+                                 + "updated: " + updatedDate.toLocaleDateString('sk-SK', dateOptions)
+        , { color: 0xffffff, scale: 1.0, align: 'left', position: 'center' })
+        /*new ThreeMeshUI.Text({
             fontSize: 0.02,
             fontColor: new THREE.Color( 0xffffff ),
             content: "owner: " + info.owner + "\n"
@@ -845,7 +1094,7 @@ createNodeInfo = function(width, height, info) {
             fontSize: 0.02,
             fontColor: new THREE.Color( 0xffffff ),
             content: "updated: " + updatedDate.toLocaleDateString('sk-SK', dateOptions)
-        }),
+        }),*/
     );
 
     return nodeInfo;
@@ -862,11 +1111,12 @@ createNodeButton = function(width, height, name, content) {
         backgroundOpacity: 0.3,
         name: name
     }).add(
-        new ThreeMeshUI.Text({
+        new dat.GUIVR.addTextMesh( content, { color: 0xffffff, scale: 1.0, align: 'left', position: 'center' })
+        /*new ThreeMeshUI.Text({
             fontSize: 0.05,
             fontColor: new THREE.Color( 0x000000 ),
             content: content
-        }),
+        }),*/
     );
 
     return container;
@@ -926,13 +1176,19 @@ vvv.createBaseGUI = function() {
         name: "nodeInfoBlock"
     });
 
+    var mesh = new dat.GUIVR.addTextMesh("Informacie o vybranom prvku: \n", { color: 0xffffff, scale: 1.0, align: 'left'});
+
     nodeInfoBlock.add(
-        new ThreeMeshUI.Text({
+        mesh
+        /*new ThreeMeshUI.Text({
             fontSize: 0.035,
             fontColor: new THREE.Color(0xd3d3d3),
             content: "Informacie o vybranom prvku: \n"
-        })
+        })*/
     );
+
+    mesh.position.x -= 0.47;
+    mesh.position.y += 0.1;
 
     const nodeInfoSubBlock = new ThreeMeshUI.InlineBlock({
         height: 0.5,
@@ -945,12 +1201,43 @@ vvv.createBaseGUI = function() {
         backgroundOpacity: 0,
         name: "nodeInfoSubBlock"
     });
+
+    var mesh = new dat.GUIVR.addTextMesh("", { color: 0xffffff, scale: 1.0, align: 'left'});
+    nodeInfoSubBlock.add(
+        mesh
+    );
+
+    mesh.position.x -= 0.5;
+    mesh.position.y -= 0.3;
+
     nodeInfoBlock.add(nodeInfoSubBlock);
 
     baseGUI.add(nodeInfoBlock);
 
     console.log(baseGUI);
     return baseGUI;
+}
+
+vvv.updateRepoInfo = function(node) {
+    const createdDate = new Date(node.__data.repoInfo.createdDate);
+    const updatedDate = new Date(node.__data.repoInfo.updatedDate);
+
+    var topics = "";
+    node.__data.repoInfo.topics.forEach(topic => { 
+        topics += topic + " "
+    })
+
+    var newText =     "Nazov: "        + node.__data.repoInfo.name + "\n"
+                    + "Popis: "        + node.__data.repoInfo.description.replace(/\p{Emoji}/ug, (m, idx) => `[e-${m.codePointAt(0).toString(16)}]`) + "\n"
+                    + "Topics: "       + topics + "\n"
+                    + "Stars: "        + node.__data.repoInfo.stars + "\n"
+                    + "Forks: "        + node.__data.repoInfo.forks + "\n"
+                    + "Watchers: "     + node.__data.repoInfo.watchers + "\n"
+                    + "Language: "     + node.__data.repoInfo.language + "\n"
+                    + "Created: "      + createdDate.toLocaleDateString('sk-SK', dateOptions) + "\n"
+                    + "Updated: "      + updatedDate.toLocaleDateString('sk-SK', dateOptions) + "\n";
+
+    return newText;
 }
 
 vvv.addRepoInfoSubBlock = function(node) {
@@ -967,15 +1254,38 @@ vvv.addRepoInfoSubBlock = function(node) {
         name: "nodeInfoSubBlock"
     });
 
+    const createdDate = new Date(node.__data.repoInfo.createdDate);
+    const updatedDate = new Date(node.__data.repoInfo.updatedDate);
+
+    var topics = "";
+    node.__data.repoInfo.topics.forEach(topic => { 
+        topics += topic + " "
+    })
+
+    var mesh = new dat.GUIVR.addTextMesh( "Nazov: "        + node.__data.repoInfo.name + "\n"
+                                        + "Popis: "        + node.__data.repoInfo.description.replace(/\p{Emoji}/ug, (m, idx) => `[e-${m.codePointAt(0).toString(16)}]`) + "\n"
+                                        + "Topics: "       + topics + "\n"
+                                        + "Stars: "        + node.__data.repoInfo.stars + "\n"
+                                        + "Forks: "        + node.__data.repoInfo.forks + "\n"
+                                        + "Watchers: "     + node.__data.repoInfo.watchers + "\n"
+                                        + "Language: "     + node.__data.repoInfo.language + "\n"
+                                        + "Created: "      + createdDate.toLocaleDateString('sk-SK', dateOptions) + "\n"
+                                        + "Updated: "      + updatedDate.toLocaleDateString('sk-SK', dateOptions) + "\n"
+                                        , { color: 0xffffff, scale: 1.0, align: 'left'})
+
     nodeInfoSubBlock.add(
-        new ThreeMeshUI.Text({
+        mesh
+        /*new ThreeMeshUI.Text({
             fontSize: 0.03,
             fontColor: new THREE.Color(0xd3d3d3),
             content: "Nazov: " + node.__data.repoInfo.name + "\n"
-        })
+        })*/
     );
 
-    nodeInfoSubBlock.add(
+    mesh.position.x -= 0.5;
+    mesh.position.y -= 0.5;
+
+    /*nodeInfoSubBlock.add(
         new ThreeMeshUI.Text({
             fontSize: 0.03,
             fontColor: new THREE.Color(0xd3d3d3),
@@ -1025,7 +1335,7 @@ vvv.addRepoInfoSubBlock = function(node) {
             fontColor: new THREE.Color(0xd3d3d3),
             content: "Created: " + createdDate.toLocaleDateString('sk-SK', dateOptions) + "\nUpdated: " + updatedDate.toLocaleDateString('sk-SK', dateOptions) + "\n"
         })
-    );
+    );*/
 
     /*
     repoInfo = {
@@ -1122,11 +1432,12 @@ createButton = function(width, height, name, content) {
         backgroundOpacity: 0.3,
         name: name
     }).add(
-        new ThreeMeshUI.Text({
+        new dat.GUIVR.addTextMesh(content, { color: 0xffffff, scale: 1.0, align: 'center', position: "center"})
+        /*new ThreeMeshUI.Text({
             fontSize: 0.035,
             fontColor: new THREE.Color( 0x000000 ),
             content: content
-        }),
+        }),*/
     );
 
     return container;
@@ -1136,7 +1447,7 @@ vvv.createLayout = function(posX, posY, posZ) {
 
     const layoutContainer = new ThreeMeshUI.Block({
         width: 2,
-        height: 1,
+        height: 1.2,
         padding: 0.02,
         fontFamily: './js/' + fontFilesName + '.json',
         fontTexture: './js/' + fontFilesName + '.png',
@@ -1152,7 +1463,7 @@ vvv.createLayout = function(posX, posY, posZ) {
 
     // content
     const layoutContent = new ThreeMeshUI.InlineBlock({
-        height: 0.84,
+        height: 1.04,
         width: 1.83,
         backgroundColor: new THREE.Color( 0x2d2d2d ),
         backgroundOpacity: 1,
@@ -1160,7 +1471,7 @@ vvv.createLayout = function(posX, posY, posZ) {
     });
 
     const layoutContentSpace = new ThreeMeshUI.InlineBlock({
-        height: 0.84,
+        height: 1.04,
         width: 0.02,
         backgroundOpacity: 0,
     });  
@@ -1215,11 +1526,12 @@ createLayoutHeader = function() {
         justifyContent: "center",
         name: "buttonMinimalize"
     }).add(
-        new ThreeMeshUI.Text({
+        new dat.GUIVR.addTextMesh("_", { color: 0xffffff, scale: 1.0, align: 'center', position: "center"})
+        /*new ThreeMeshUI.Text({
             fontSize: 0.05,
             fontColor: new THREE.Color( 0x000000 ),
             content: "_"
-        })
+        })*/
     );
 
     const layoutHeaderSpace2 = new ThreeMeshUI.InlineBlock({
@@ -1238,11 +1550,12 @@ createLayoutHeader = function() {
         justifyContent: "center",
         name: "buttonClose"
     }).add(
-        new ThreeMeshUI.Text({
+        new dat.GUIVR.addTextMesh("X", { color: 0xffffff, scale: 1.0, align: 'center', position: "center"})
+        /*new ThreeMeshUI.Text({
             fontSize: 0.05,
             fontColor: new THREE.Color( 0x000000 ),
             content: "X"
-        })
+        })*/
     );
 
     layoutHeader.add(layoutHeaderTitle, layoutHeaderSpace, layoutHeaderMinimalize, layoutHeaderSpace2, layoutHeaderClose);
@@ -1254,7 +1567,7 @@ createLayoutHeader = function() {
 createLayoutScroll = function() {
     // scroll
     const layoutScroll = new ThreeMeshUI.InlineBlock({
-        height: 0.84,
+        height: 1.04,
         width: 0.1,
         backgroundColor: new THREE.Color( 0xd3d3d3 ),
         backgroundOpacity: 0.1,
@@ -1272,11 +1585,12 @@ createLayoutScroll = function() {
         info: {scrollValue: -20, type: 'button', scrollDirection: "up"},
         justifyContent: "center",
     }).add(
-        new ThreeMeshUI.Text({
+        new dat.GUIVR.addTextMesh("<<", { color: 0xffffff, scale: 1.0, align: 'center', position: "center"})
+        /*new ThreeMeshUI.Text({
             fontSize: 0.05,
             fontColor: new THREE.Color( 0x000000 ),
             content: "<<"
-        })
+        })*/
     );
 
     const buttonUp = new ThreeMeshUI.InlineBlock({
@@ -1288,15 +1602,16 @@ createLayoutScroll = function() {
         info: {scrollValue: -1, type: 'button', scrollDirection: "up"},
         justifyContent: "center",
     }).add(
-        new ThreeMeshUI.Text({
+        new dat.GUIVR.addTextMesh("<", { color: 0xffffff, scale: 1.0, align: 'center', position: "center"})
+        /*new ThreeMeshUI.Text({
             fontSize: 0.05,
             fontColor: new THREE.Color( 0x000000 ),
             content: "<"
-        })
+        })*/
     );
 
     const buttonSpace = new ThreeMeshUI.InlineBlock({
-        height: 0.4,
+        height: 0.6,
         width: 0.1,
         backgroundColor: new THREE.Color( 0xd3d3d3 ),
         backgroundOpacity: 0,
@@ -1311,11 +1626,12 @@ createLayoutScroll = function() {
         info: {scrollValue: 1, type: 'button', scrollDirection: "down"},
         justifyContent: "center",
     }).add(
-        new ThreeMeshUI.Text({
+        new dat.GUIVR.addTextMesh(">", { color: 0xffffff, scale: 1.0, align: 'center', position: "center"})
+        /*new ThreeMeshUI.Text({
             fontSize: 0.05,
             fontColor: new THREE.Color( 0x000000 ),
             content: ">"
-        })
+        })*/
     );
 
     const buttonPageDown = new ThreeMeshUI.InlineBlock({
@@ -1327,11 +1643,12 @@ createLayoutScroll = function() {
         info: {scrollValue: 20, type: 'button', scrollDirection: "down"},
         justifyContent: "center",
     }).add(
-        new ThreeMeshUI.Text({
+        new dat.GUIVR.addTextMesh(">>", { color: 0xffffff, scale: 1.0, align: 'center', position: "center"})
+        /*new ThreeMeshUI.Text({
             fontSize: 0.05,
             fontColor: new THREE.Color( 0x000000 ),
             content: ">>"
-        })
+        })*/
     );
 
     layoutScroll.add(buttonPageUp, buttonUp, buttonSpace, buttonDown, buttonPageDown);
@@ -1381,7 +1698,11 @@ createHistoryButton = function(width, height, commitInfo) {
         name: "buttonCommit",
         info: commitInfo,
     }).add(
-        new ThreeMeshUI.Text({
+        new dat.GUIVR.addTextMesh(commitInfo.message  + "\n"
+                                  + commitInfo.author + "\n"
+                                  + commitInfo.date        
+        , { color: 0xffffff, scale: 1.0, align: 'center', position: "center"})
+        /*new ThreeMeshUI.Text({
             fontSize: 0.02,
             fontColor: new THREE.Color( 0xffffff ),
             content: commitInfo.message  + "\n"
@@ -1395,7 +1716,7 @@ createHistoryButton = function(width, height, commitInfo) {
             fontSize: 0.02,
             fontColor: new THREE.Color( 0xffffff ),
             content: commitInfo.date
-        }),
+        }),*/
     );
 
     return container;
@@ -1441,7 +1762,7 @@ function makeUI() {
     	fontSize: 0.045,
     	backgroundOpacity: 0
     }).add(
-        new dat.GUIVR.addTextMesh( "Type search query on the keyboard", { color: 0xffffff, scale: 1.0, align: 'left' })
+        new dat.GUIVR.addTextMesh( "Type search query on the keyboard", { color: 0xffffff, scale: 1.0, align: 'left', position: 'center' })
     );
 
     /*console.log(title);
@@ -1450,7 +1771,10 @@ function makeUI() {
     mesh.position.x += x;
     mesh.position.y += y;*/
 
-    userText = new ThreeMeshUI.Text({ content: '', queryType: '' });
+    //userText = new ThreeMeshUI.Text({ content: '', queryType: '' });
+    newUserTextMesh = new dat.GUIVR.addTextMesh( "", { color: 0xffffff, scale: 1.0, align: 'center', position: 'center' });
+    newUserTextMesh.position.y += 0.2;
+    newUserTextMesh.position.x -= 0.45;
 
     const textField = new ThreeMeshUI.Block({
     	width: 1,
@@ -1458,7 +1782,10 @@ function makeUI() {
     	fontSize: 0.033,
     	padding: 0.02,
     	backgroundOpacity: 0
-    }).add( userText );
+    }).add( 
+        //userText 
+        newUserTextMesh
+    );
 
     textPanel.add( title, textField );
 
@@ -1503,7 +1830,7 @@ function makeUI() {
     		//	fontSize: 0.035,
     		//	content: options[ 0 ]
     		//})
-            new dat.GUIVR.addTextMesh( options[0], { color: 0xffffff, scale: 1.0, align: 'left' })
+            new dat.GUIVR.addTextMesh( options[0], { color: 0xffffff, scale: 1.0, align: 'left', position: 'center' })
 
     	);
 
@@ -1533,34 +1860,51 @@ function makeUI() {
 				backgroundOpacity: 1
 			},
 			onSet: ()=> {
-                //userText.queryType = options[ 1 ];
                 console.log(options[ 1 ]);
                 switch( options[ 1 ] ) {
 
                     // hlavne
                     case 'user' :
-                        userText.set({ content: userText.content += '+user:' });
+                        //userText.set({ content: userText.content += '+user:' });
+                        newUserText += "+user";
+                        newUserTextMesh.geometry.update(newUserText);
+                        //newUserTextMesh.position.x = 0 - (newUserTextMesh.userData.width() / 2);
                         break;
                     
                     case 'name' :
-                        userText.set({ content: userText.content += '+name:' });
+                        //userText.set({ content: userText.content += '+name:' });
+                        newUserText += "+name";
+                        newUserTextMesh.geometry.update(newUserText);
+                        //newUserTextMesh.position.x = 0 - (newUserTextMesh.userData.width() / 2);
                         break;
 
                     case 'language' :
-                        userText.set({ content: userText.content += '+language:' });
+                        //userText.set({ content: userText.content += '+language:' });
+                        newUserText += "+language";
+                        newUserTextMesh.geometry.update(newUserText);
+                        //newUserTextMesh.position.x = 0 - (newUserTextMesh.userData.width() / 2);
                         break;
 
                     case 'topic' :
-                        userText.set({ content: userText.content += '+topic:' });
+                        //userText.set({ content: userText.content += '+topic:' });
+                        newUserText += "+topic";
+                        newUserTextMesh.geometry.update(newUserText);
+                        //newUserTextMesh.position.x = 0 - (newUserTextMesh.userData.width() / 2);
                         break;
 
                     // doplnkove
                     case 'sort' :
-                        userText.set({ content: userText.content += '&sort=' });
+                        //userText.set({ content: userText.content += '&sort=' });
+                        newUserText += "&sort=";
+                        newUserTextMesh.geometry.update(newUserText);
+                        //newUserTextMesh.position.x = 0 - (newUserTextMesh.userData.width() / 2);
                         break;
 
                     case 'order' :
-                        userText.set({ content: userText.content += '&order=' });
+                        //userText.set({ content: userText.content += '&order=' });
+                        newUserText += "&order=";
+                        newUserTextMesh.geometry.update(newUserText);
+                        //newUserTextMesh.position.x = 0 - (newUserTextMesh.userData.width() / 2);
                         break;
 
                     
@@ -1599,7 +1943,7 @@ function makeUI() {
 	  		//	fontSize: 0.04,
 	  		//	content: 'Help to search query:'
 	  		//}),
-            new dat.GUIVR.addTextMesh( "Help to search query:", { color: 0xffffff, scale: 1.0, align: 'left' })
+            new dat.GUIVR.addTextMesh( "Help to search query:", { color: 0xffffff, scale: 1.0, align: 'left', position: 'center' })
 
 	  	),
 
@@ -1645,7 +1989,7 @@ function makeUI() {
 	  		//	fontSize: 0.03,
 	  		//	content: 'Example: tetris+language:assembly&sort=stars&order=desc'
 	  		//}),
-            new dat.GUIVR.addTextMesh( "Example: tetris+language:assembly&sort=stars&order=desc", { color: 0xffffff, scale: 1.0, align: 'left' })
+            new dat.GUIVR.addTextMesh( "Example: tetris+language:java&sort=stars&order=desc", { color: 0xffffff, scale: 1.0, align: 'left', position: 'center' })
 
 	  	)
 
@@ -1742,14 +2086,21 @@ function makeKeyboard( language ) {
 						case 'space' :
                             //userText.set({ content: userText.content += ' ' });
                             //userText.set({ content: userText.content = 'JavaTestRepo+user:MartinSith' });
-                            userText.set({ content: userText.content = 'user:MartinSith' });
+                            //userText.set({ content: userText.content = 'user:MartinSith' });
+                            newUserText = "user:MartinSith";
+                            newUserTextMesh.geometry.update(newUserText);
+                            //newUserTextMesh.position.x = 0 - (newUserTextMesh.userData.width() / 2);
 							break;
 
 						case 'backspace' :
-							if ( !userText.content.length ) break
-							userText.set({
+							if ( !newUserText.length ) break
+                            newUserText = newUserText.substring(0, newUserText.length - 1) || "";
+                            newUserTextMesh.geometry.update(newUserText);
+                            //newUserTextMesh.position.x = 0 - (newUserTextMesh.userData.width() / 2);
+                            //if ( !userText.content.length ) break
+							/*userText.set({
 								content: userText.content.substring(0, userText.content.length - 1) || ""
-							});
+							});*/
 							break;
 
 						case 'shift' :
@@ -1760,9 +2111,10 @@ function makeKeyboard( language ) {
 
 				// print a glyph, if any
 				} else if ( key.info.input ) {
-
-					userText.set({ content: userText.content += key.info.input });
-
+					//userText.set({ content: userText.content += key.info.input });
+                    newUserText += key.info.input;
+                    newUserTextMesh.geometry.update(newUserText);
+                    //newUserTextMesh.position.x = 0 - (newUserTextMesh.userData.width() / 2);
 				};
 
 			}

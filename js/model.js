@@ -12,7 +12,7 @@ mmm.graphData = {
 var fetchInfo = {
     method: "GET",
     headers: {
-        Authorization: "token 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" 
+        Authorization: 'Basic ' + "sithmartin1@gmail.com" + ':' + "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"
     }
 }
 
@@ -129,7 +129,7 @@ mmm.getSearchQuery = async function(type, query) {
             method: "GET",
             headers: {
                 Accept: "application/vnd.github.mercy-preview+json",
-                Authorization: "token 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" 
+                Authorization: 'Basic ' + "sithmartin1@gmail.com" + ':' + "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"
             }    
         }
     )
