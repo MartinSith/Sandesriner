@@ -3346,7 +3346,7 @@ var GUIVR = function DATGUIVR() {
   
 	//return group;
 	var mesh = group.children[0];
-  console.log(arguments[1].position);
+  //console.log(arguments[1].position);
   if (arguments[1].position == "center") {
 	  mesh.position.x -= group.computeWidth() / 2;
   }

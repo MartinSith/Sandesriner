@@ -156,12 +156,13 @@ ccc.viveController = function() {
         }
 
         if (gamepad) {
-            if (gamepad.axes[0] != gamepadOld.axes[0] || gamepad.axes[1] != gamepadOld.axes[1]) {
+            self.pressedKeys.add({'x': gamepad.axes[0], 'y': gamepad.axes[1]});
+            /*if (gamepad.axes[0] != gamepadOld.axes[0] || gamepad.axes[1] != gamepadOld.axes[1]) {
                 gamepadOld.axes[0] = gamepad.axes[0];
                 gamepadOld.axes[1] = gamepad.axes[1];
 
                 self.pressedKeys.add({'x': gamepad.axes[0], 'y': gamepad.axes[1]});
-            }
+            }*/
         }   
 
         this.updateMoves();
@@ -172,346 +173,80 @@ ccc.viveController = function() {
     }
 
 	this.onSelectStart = function(event) {
-        console.log(gamepad);
-        console.log("click");
-        console.log(guiInputRight);
         guiInputRight.pressed(true);
 		var controller = event.target;
 		var intersects = self.getIntersected(controller);
-        console.log("intersects");
-        console.log(intersects);
 
-        if (intersects && intersects.object.isUI){
-            intersects.object.setState( 'selected' );
+        if (intersects)
+            intersectedObject = intersects.object;
 
-            // ak je to znak na klavesnici a Enter
-            if (intersects.object.type == 'Key') {
-                if (intersects.object.info.input == 'enter') {
-                    ccc.view.model.getSearchQuery("repositories", newUserText).then(function(result) {
-                        console.log("result");
-                        console.log(result);
-                        if(result.total_count > 0) {
-                            ccc.view.resetGraph(result.items);
-                        }
-                    });
-                }
-            }
+        if (intersectedObject && intersectedObject.isUI){
+            intersectedObject.setState( 'selected' );
 
-            // minimalizovanie
-            if (intersects.object.name == "buttonMinimalize") {
-                intersects.object.parent.parent.visible = false;
-            }
+            if (intersectedObject.type == 'Key' && intersectedObject.info.input == 'enter')
+                buttonEnterFunction(intersectedObject);
 
-            // otvorenie
-            if (intersects.object.name == "buttonExpand") {
-                var node = intersects.object.parent.parent;
+            if (intersectedObject.name == "buttonMinimalize")
+                intersectedObject.parent.parent.visible = false;
 
-                ccc.view.model.getContent(node.__data.user, node.__data.repository, node.__data.path).then(function(result) {
-                    ccc.view.updateGraph(result, node);
-                });
-            }
+            if (intersectedObject.name == "buttonOpen")
+                buttonOpenFunction(intersectedObject);
 
-            // historia
-            if (intersects.object.name == "buttonHistory") {
-                var node = intersects.object.parent.parent;
+            if (intersectedObject.name == "buttonHistory")
+                buttonHistoryFunction(intersectedObject);
 
-                ccc.view.model.getFileCommitsInfo(node.__data.user, node.__data.repository, node.__data.path).then(function(result) {
-                    result.forEach(commit => {
+            if (intersectedObject.name == "buttonHistoryOpen")
+                buttonCommitFunction(intersectedObject);
 
-                        var date = new Date(commit.commit.author.date);
-                        date = date.toLocaleDateString('sk-SK', dateOptions);
+            if (intersectedObject.name == "buttonHistoryDiff")
+                buttonCommitDiffFunction(intersectedObject);
 
-                        node.__data.commitsInfo.push({
-                            message: commit.commit.message.split('\n')[0],
-                            author: commit.commit.author.name,
-                            date: date,
-                            sha: commit.sha
-                        });
+            if (intersectedObject.name == "buttonKeyboard")
+                buttonKeyboardFunction();
 
-                        console.log(node.__data.commitsInfo);
-                    });
+            if (intersectedObject.name == "buttonStartTest")
+                buttonStartTestFunction();
 
-                    var historyLayout = ccc.view.createHistoryLayout(0, 0, 0, node.__data.commitsInfo);
-                    node.add(historyLayout);
-                });
-            }
+            if (intersectedObject.name == "buttonEndTest")
+                buttonEndTestFunction();
 
-            // button commit
-            if (intersects.object.name == "buttonCommit") {
-                var node = intersects.object.parent.parent;
+            if (intersectedObject.info)
+                if (intersectedObject.info.type == 'button')
+                    buttonHoreDoleFunction(intersectedObject);
 
-                ccc.view.model.getFileCommitContent(node.__data.user, node.__data.repository, node.__data.path, intersects.object.info.sha).then(function(result) {
-                    var commitInfo = node.__data.commitsInfo.filter(obj => { return obj.sha == intersects.object.info.sha })[0];
-                    commitInfo.content = result;
-                    commitInfo.contentTokens = ccc.view.addTextContentTokens(result, node.__data.name.split('.').pop());
+            if (intersectedObject.info)
+                if (intersectedObject.info.type == 'historyButton')
+                    buttonHistoryHoreDoleFunction(intersectedObject);
 
-                    var layout = ccc.view.createLayout(0, 0, 0);
-                    var layoutHeaderTitle = layout.children.filter(obj => { return obj.name == "layoutHeader" })[0].children.filter(obj => { return obj.name == "layoutHeaderTitle" })[0];
-                    layoutHeaderTitle.add(
-                        new dat.GUIVR.addTextMesh(node.__data.name, { color: 0xffffff, scale: 1.0, align: 'center', position: "center"})
-                        /*new ThreeMeshUI.Text({
-                            fontSize: 0.05,
-                            fontColor: new THREE.Color( 0x000000 ),
-                            content: node.__data.name
-                        })*/
-                    );
-
-                    var content = ccc.view.addTextContent(commitInfo.contentTokens, 0);
-                    var layoutContent = layout.children.filter(obj => { return obj.name == "layoutContent" })[0];
-                    layoutContent.add(content);
-
-                    node.add(layout);
-                    //ccc.view.addTextField(result, "java", 0, 0, 0);
-                    //scene.add(textField);
-                });
-            }
-
-            // zobrazenie/skrytie klavesnice
-            if (intersects.object.name == "buttonKeyboard") {
-
-                var keyboardTop = scene.children.filter(obj => { return obj.name == "keyboardTop" })[0];
-                var keyboardBottom = scene.children.filter(obj => { return obj.name == "keyboardBottom" })[0];
-
-                if (keyboardTop.visible == true && keyboardBottom.visible == true) {
-                    keyboardTop.visible = false;
-                    keyboardBottom.visible = false;
-                } else {
-                    keyboardTop.visible = true;
-                    keyboardBottom.visible = true;
-                }
-                
-            }
-
-            // zobrazenie/skrytie Graph GUI
-            if (intersects.object.name == "buttonGraphGUI") {
-                var mainGui = scene.children.filter(obj => { return obj.name == "mainGui" })[0];
-
-                if (mainGui.visible == true) {
-                    mainGui.visible = false;
-                } else {
-                    mainGui.visible = true;
-                }
-                
-            }
-
-            // tlacidlo zapnut test
-            if (intersects.object.name == "buttonStartTest") {
-                startTime = new Date();
-
-                numberOfClicks = 0;
-                document.addEventListener("click", function(event){
-                    numberOfClicks++;
-                    console.log(numberOfClicks);
-                });
-
-                numberOfKeysPressed = 0;
-                document.addEventListener("keyup", function(event){
-                    numberOfKeysPressed++;
-                    console.log(numberOfKeysPressed);
-                });
-                
-            }
-
-            // tlacidlo zapnut test
-            if (intersects.object.name == "buttonEndTest") {
-                endTime = new Date();
-                var timeDiff = endTime - startTime;
-                timeDiff /= 1000;
-                var seconds = Math.round(timeDiff);
-
-                alert("Cas potrebny na splnenie ulohy: " + seconds + " sekund" + "\nPocet kliknuti: " + numberOfClicks + "\nPocet stlaceni klavesnice: " + numberOfKeysPressed);
-            }
-
-            // scroll buttony
-            if (intersects.object.info) {
-                if (intersects.object.info.type == 'button') {
-                    var button = intersects.object;
-                    var layout = intersects.object.parent.parent;
-                    var node = intersects.object.parent.parent.parent;
-
-                    if (layout.info.scrollPosition + button.info.scrollValue > node.__data.fileContentTokens.length) {
-                        return;
-                    }
-
-                    var layoutContent = layout.children.filter(obj => { return obj.name == "layoutContent" })[0];
-                    layoutContent.remove(layoutContent.children.filter(obj => { return obj.name == "fileContentContainer" })[0]);
-
-                    layout.info.scrollPosition += button.info.scrollValue;
-                    if (layout.info.scrollPosition < 0) {
-                        layout.info.scrollPosition = 0;
-                    }
-
-                    var content = ccc.view.addTextContent(node.__data.fileContentTokens, layout.info.scrollPosition);
-                    layoutContent.add(content);
-                }
-            }
+            if (intersectedObject.name == "buttonCommit") 
+                GUIsettings.clickedHistoryButton = intersectedObject;
 
             objsToTest.forEach( (obj)=> {
+
                 if ( obj.isUI ) {
+        
+                    // Component.setState internally call component.set with the options you defined in component.setupState
                     if ( obj.states['idle'] ) obj.setState( 'idle' );
         
                 };
+        
             });
-        } 
-        else if (intersects && !intersects.object.isUI) {
-            console.log("intersects != null");
-            //if (intersects[0] != null) {
+        }
+        else if (intersectedObject && !intersectedObject.isUI) {
+            GUIsettings.clickedNode = intersectedObject;
 
-                console.log(intersects);
+            var nodeInfoBlock = scene.children.filter(obj => { return obj.name == "baseGUI" })[0]
+                                     .children.filter(obj => { return obj.name == "nodeInfoBlock" })[0];
+            nodeInfoBlock.remove(nodeInfoBlock.children.filter(obj => { return obj.name == "nodeInfoSubBlock" })[0]);
 
-                console.log(ccc.view);
+            if (intersectedObject.__data.repoInfo) {
+                var nodeInfoSubBlock = ccc.view.addRepoInfoSubBlock(intersectedObject);
+            }
+            else {
+                var nodeInfoSubBlock = ccc.view.addNodeInfoSubBlock(intersectedObject);
+            }
 
-                // directory
-                if (intersects.object.__data.type == "dir") {
-
-                    GUIsettings.clickedNode = intersects.object;
-                    var clickedNode = intersects.object;
-
-                    console.log(intersects.object.__data);
-
-                    intersects.object.__data.oldX = intersects.object.__data.x;
-                    intersects.object.__data.oldY = intersects.object.__data.y;
-                    intersects.object.__data.oldZ = intersects.object.__data.z;
-
-                    var nodeInfoSubBlock = scene.children.filter(obj => { return obj.name == "baseGUI" })[0].children.filter(obj => { return obj.name == "nodeInfoBlock" })[0].children.filter(obj => { return obj.name == "nodeInfoSubBlock" })[0];
-                    //nodeInfoBlock.remove(nodeInfoBlock.children.filter(obj => { return obj.name == "nodeInfoSubBlock" })[0]);
-                    console.log(nodeInfoSubBlock);
-
-                    /*if (clickedNode.__data.repoInfo) {
-                        var nodeInfoSubBlock = ccc.view.addRepoInfoSubBlock(clickedNode);
-                    }
-                    else {
-                        var nodeInfoSubBlock = ccc.view.addNodeInfoSubBlock(clickedNode);
-                    }
-                    nodeInfoBlock.add(nodeInfoSubBlock);*/
-
-                    if (GUIsettings.clickedNode != null) {
-                        var node = GUIsettings.clickedNode;
-
-                        ccc.view.model.getContent(node.__data.user, node.__data.repository, node.__data.path).then(function(result) {
-                            ccc.view.updateGraph(result, node);
-                        });
-                    }
-
-                    //var nodeLayout = ccc.view.createNodeLayout(0, -0.115, 0.01, intersects[0].object.__data.repoInfo);
-                    //intersects[0].object.add(nodeLayout);
-
-                    // if directory is not expanded
-                    /*if (intersects[0].object.__data.expanded == 0) {
-
-                        console.log("Nie je expanded");
-                        intersects[0].object.__data.expanded = 1;
-
-                        // if data are not loaded
-                        if (intersects[0].object.__data.loaded == 0) {
-                            
-                            console.log("Nie je expanded a nie su nacitane data");
-                            intersects[0].object.__data.loaded == 1;
-
-                            ccc.view.model.getContent(intersects[0].object.__data.user, intersects[0].object.__data.repo, intersects[0].object.__data.path).then(function(result) {
-                                ccc.view.updateGraph(result, intersects[0].object.__data.user, intersects[0].object.__data.repo);
-                            });
-                        } else {
-                            console.log("Nie je expanded a su nacitane data");
-                            intersects[0].object.visible = true;
-                        }
-
-                    } else {
-                        console.log("Je expanded");
-                        //intersects[0].object.visible = false;
-                        intersects[0].object.__data.expanded = 0;
-                        intersects[0].object.__data.loaded = 1;
-                    }*/
-                }
-                else if (intersects.object.__data.type == "file") {
-
-                    GUIsettings.clickedNode = intersects.object;
-                    var clickedNode = intersects.object;
-
-                    var nodeInfoBlock = scene.children.filter(obj => { return obj.name == "baseGUI" })[0].children.filter(obj => { return obj.name == "nodeInfoBlock" })[0];
-                    nodeInfoBlock.remove(nodeInfoBlock.children.filter(obj => { return obj.name == "nodeInfoSubBlock" })[0]);
-
-                    var nodeInfoSubBlock = ccc.view.addNodeInfoSubBlock(clickedNode);
-                    nodeInfoBlock.add(nodeInfoSubBlock);
-
-                    if (GUIsettings.clickedNode != null) {
-                        var node = GUIsettings.clickedNode;
-
-                        ccc.view.model.getContent(node.__data.user, node.__data.repository, node.__data.path).then(function(result) {
-                            ccc.view.updateGraph(result, node);
-                        });
-                    }
-
-                    //var nodeLayout = ccc.view.createNodeLayout(0, 0, 0.01);
-                    //intersects[0].object.add(nodeLayout);
-
-                    // images
-                    if (intersects.object.__data.name.split('.').pop() == 'png') {
-                        console.log(intersects.object.__data);
-
-                        intersects.object.__data.oldX = intersects.object.__data.x;
-                        intersects.object.__data.oldY = intersects.object.__data.y;
-                        intersects.object.__data.oldZ = intersects.object.__data.z;
-
-                        ccc.view.model.getImageContent(intersects.object.__data.user, intersects.object.__data.repository, intersects.object.__data.path).then(function(result) {
-                            intersects.object.__data.fileContent = result;
-
-                            var layout = ccc.view.createLayout(0, 0, 0);
-                            var layoutHeaderTitle = layout.children.filter(obj => { return obj.name == "layoutHeader" })[0].children.filter(obj => { return obj.name == "layoutHeaderTitle" })[0];
-                            layoutHeaderTitle.add(
-                                new dat.GUIVR.addTextMesh(intersects.object.__data.name, { color: 0xffffff, scale: 1.0, align: 'center', position: "center"})
-                                /*new ThreeMeshUI.Text({
-                                    fontSize: 0.05,
-                                    fontColor: new THREE.Color( 0x000000 ),
-                                    content: intersects.object.__data.name
-                                })*/
-                            );
-
-                            var content = ccc.view.addImageContent(result.content);
-                            var layoutContent = layout.children.filter(obj => { return obj.name == "layoutContent" })[0];
-                            layoutContent.add(content);
-
-                            intersects.object.add(layout);
-                        });
-                    } else {
-
-                        // if data are not loaded
-                        if (intersects.object.__data.loaded == 0) {
-                            console.log(intersects);
-                            console.log(intersects.object);
-
-                            intersects.object.__data.oldX = intersects.object.__data.x;
-                            intersects.object.__data.oldY = intersects.object.__data.y;
-                            intersects.object.__data.oldZ = intersects.object.__data.z;
-
-                            ccc.view.model.getFileContent(intersects.object.__data.user, intersects.object.__data.repository, intersects.object.__data.path).then(function(result) {
-                                intersects.object.__data.fileContent = result;
-                                intersects.object.__data.fileContentTokens = ccc.view.addTextContentTokens(result, intersects.object.__data.name.split('.').pop());
-
-                                var layout = ccc.view.createLayout(0, 0, 0);
-                                var layoutHeaderTitle = layout.children.filter(obj => { return obj.name == "layoutHeader" })[0].children.filter(obj => { return obj.name == "layoutHeaderTitle" })[0];
-                                layoutHeaderTitle.add(
-                                    new dat.GUIVR.addTextMesh(intersects.object.__data.name, { color: 0xffffff, scale: 1.0, align: 'center', position: "center"})
-                                    /*new ThreeMeshUI.Text({
-                                        fontSize: 0.05,
-                                        fontColor: new THREE.Color( 0x000000 ),
-                                        content: intersects.object.__data.name
-                                    })*/
-                                );
-
-                                var content = ccc.view.addTextContent(intersects.object.__data.fileContentTokens, 0);
-                                var layoutContent = layout.children.filter(obj => { return obj.name == "layoutContent" })[0];
-                                layoutContent.add(content);
-
-                                intersects.object.add(layout);
-                            });
-
-                        } else {
-                            // intersects[0].object.__data.expanded = 1;
-                        }
-                    }
-                }
-            //}
+            nodeInfoBlock.add(nodeInfoSubBlock);
         }
 		
 	};
@@ -544,174 +279,63 @@ ccc.mouse = function() {
     this.onMouseClick = function(event) {
         self.raycaster.setFromCamera(self.mouse, this.camera);
 
-        console.log(objsToTest);
         var intersects = self.raycaster.intersectObjects(ccc.view.myGraph.children.filter(child => child.__graphObjType == 'node'));
         var keyboardIntersect = raycast(self.raycaster);
+        var intersectedObject;
 
-        console.log(keyboardIntersect);
-        console.log(intersects[0]);
-        console.log(scene);
+        if (intersects[0] && keyboardIntersect) {
+            intersectedObject = intersects[0].distance < keyboardIntersect.distance ? intersects[0].object : keyboardIntersect.object;
+        } 
+        else if (intersects[0]) {
+            intersectedObject = intersects[0].object;
+        } 
+        else if (keyboardIntersect) {
+            intersectedObject = keyboardIntersect.object;
+        }
+        else {
+            intersectedObject = null;
+        }
 
-        if (keyboardIntersect && keyboardIntersect.object.isUI){
-            keyboardIntersect.object.setState( 'selected' );
+        if (intersectedObject && intersectedObject.isUI){
+            intersectedObject.setState( 'selected' );
 
-            if (keyboardIntersect.object.type == 'Key') {
-                if (keyboardIntersect.object.info.input == 'enter') {
-                    ccc.view.model.getSearchQuery("repositories", newUserText).then(function(result) {
-                        console.log("result");
-                        console.log(result);
-                        if(result.total_count > 0) {
-                            ccc.view.resetGraph(result.items);
-                        }
-                    });
-                }
-            }
+            if (intersectedObject.type == 'Key' && intersectedObject.info.input == 'enter')
+                buttonEnterFunction(intersectedObject);
 
-            if (keyboardIntersect.object.name == "buttonMinimalize") {
-                keyboardIntersect.object.parent.parent.visible = false;
-            }
+            if (intersectedObject.name == "buttonMinimalize")
+                intersectedObject.parent.parent.visible = false;
 
-            if (keyboardIntersect.object.name == "buttonExpand") {
-                var node = keyboardIntersect.object.parent.parent;
+            if (intersectedObject.name == "buttonOpen")
+                buttonOpenFunction(intersectedObject);
 
-                ccc.view.model.getContent(node.__data.user, node.__data.repository, node.__data.path).then(function(result) {
-                    ccc.view.updateGraph(result, node);
-                });
-            }
+            if (intersectedObject.name == "buttonHistory")
+                buttonHistoryFunction(intersectedObject);
 
-            if (keyboardIntersect.object.name == "buttonHistory") {
-                var node = keyboardIntersect.object.parent.parent;
+            if (intersectedObject.name == "buttonHistoryOpen")
+                buttonCommitFunction(intersectedObject);
 
-                ccc.view.model.getFileCommitsInfo(node.__data.user, node.__data.repository, node.__data.path).then(function(result) {
-                    result.forEach(commit => {
+            if (intersectedObject.name == "buttonHistoryDiff")
+                buttonCommitDiffFunction(intersectedObject);
 
-                        var date = new Date(commit.commit.author.date);
-                        date = date.toLocaleDateString('sk-SK', dateOptions);
+            if (intersectedObject.name == "buttonKeyboard")
+                buttonKeyboardFunction();
 
-                        node.__data.commitsInfo.push({
-                            message: commit.commit.message.split('\n')[0],
-                            author: commit.commit.author.name,
-                            date: date,
-                            sha: commit.sha
-                        });
+            if (intersectedObject.name == "buttonStartTest")
+                buttonStartTestFunction();
 
-                        console.log(node.__data.commitsInfo);
-                        
-                        /*var d = new Date(commit.commit.author.date);
-                        var date = d.getDate() + "." + ("0" + (d.getMonth()+1)).slice(-2) + "." + d.getFullYear() + " " + ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2) + ":" +  ("0" + d.getSeconds()).slice(-2);
-                        console.log(commit.commit.message + '\n' + commit.commit.author.name + '\n' + date + '\n' + commit.sha);*/
-                    });
+            if (intersectedObject.name == "buttonEndTest")
+                buttonEndTestFunction();
 
-                    var historyLayout = ccc.view.createHistoryLayout(0, 0, 0, node.__data.commitsInfo);
-                    node.add(historyLayout);
-                });
-            }
+            if (intersectedObject.info)
+                if (intersectedObject.info.type == 'button')
+                    buttonHoreDoleFunction(intersectedObject);
 
-            if (keyboardIntersect.object.name == "buttonCommit") {
-                var node = keyboardIntersect.object.parent.parent;
+            if (intersectedObject.info)
+                if (intersectedObject.info.type == 'historyButton')
+                    buttonHistoryHoreDoleFunction(intersectedObject);
 
-                ccc.view.model.getFileCommitContent(node.__data.user, node.__data.repository, node.__data.path, keyboardIntersect.object.info.sha).then(function(result) {
-                    var commitInfo = node.__data.commitsInfo.filter(obj => { return obj.sha == keyboardIntersect.object.info.sha })[0];
-                    commitInfo.content = result;
-                    commitInfo.contentTokens = ccc.view.addTextContentTokens(result, node.__data.name.split('.').pop());
-
-                    var layout = ccc.view.createLayout(0, 0, 0);
-                    var layoutHeaderTitle = layout.children.filter(obj => { return obj.name == "layoutHeader" })[0].children.filter(obj => { return obj.name == "layoutHeaderTitle" })[0];
-                    layoutHeaderTitle.add(
-                        new dat.GUIVR.addTextMesh(node.__data.name, { color: 0xffffff, scale: 1.0, align: 'center', position: "center"})
-                        /*new ThreeMeshUI.Text({
-                            fontSize: 0.05,
-                            fontColor: new THREE.Color( 0x000000 ),
-                            content: node.__data.name
-                        })*/
-                    );
-
-                    var content = ccc.view.addTextContent(commitInfo.contentTokens, 0);
-                    var layoutContent = layout.children.filter(obj => { return obj.name == "layoutContent" })[0];
-                    layoutContent.add(content);
-
-                    node.add(layout);
-                    //ccc.view.addTextField(result, "java", 0, 0, 0);
-                    //scene.add(textField);
-                });
-            }
-
-            if (keyboardIntersect.object.name == "buttonKeyboard") {
-
-                var keyboardTop = scene.children.filter(obj => { return obj.name == "keyboardTop" })[0];
-                var keyboardBottom = scene.children.filter(obj => { return obj.name == "keyboardBottom" })[0];
-
-                if (keyboardTop.visible == true && keyboardBottom.visible == true) {
-                    keyboardTop.visible = false;
-                    keyboardBottom.visible = false;
-                } else {
-                    keyboardTop.visible = true;
-                    keyboardBottom.visible = true;
-                }
-                
-            }
-
-            if (keyboardIntersect.object.name == "buttonGraphGUI") {
-
-                var mainGui = scene.children.filter(obj => { return obj.name == "mainGui" })[0];
-
-                if (mainGui.visible == true) {
-                    mainGui.visible = false;
-                } else {
-                    mainGui.visible = true;
-                }
-                
-            }
-
-            if (keyboardIntersect.object.name == "buttonStartTest") {
-                startTime = new Date();
-
-                numberOfClicks = 0;
-                document.addEventListener("click", function(event){
-                    numberOfClicks++;
-                    console.log(numberOfClicks);
-                });
-
-                numberOfKeysPressed = 0;
-                document.addEventListener("keyup", function(event){
-                    numberOfKeysPressed++;
-                    console.log(numberOfKeysPressed);
-                });
-                
-            }
-
-            if (keyboardIntersect.object.name == "buttonEndTest") {
-                endTime = new Date();
-                var timeDiff = endTime - startTime;
-                timeDiff /= 1000;
-                var seconds = Math.round(timeDiff);
-
-                alert("Cas potrebny na splnenie ulohy: " + seconds + " sekund" + "\nPocet kliknuti: " + numberOfClicks + "\nPocet stlaceni klavesnice: " + numberOfKeysPressed);
-                
-            }
-
-            if (keyboardIntersect.object.info) {
-                if (keyboardIntersect.object.info.type == 'button') {
-                    var button = keyboardIntersect.object;
-                    var layout = keyboardIntersect.object.parent.parent;
-                    var node = keyboardIntersect.object.parent.parent.parent;
-
-                    if (layout.info.scrollPosition + button.info.scrollValue > node.__data.fileContentTokens.length) {
-                        return;
-                    }
-
-                    var layoutContent = layout.children.filter(obj => { return obj.name == "layoutContent" })[0];
-                    layoutContent.remove(layoutContent.children.filter(obj => { return obj.name == "fileContentContainer" })[0]);
-
-                    layout.info.scrollPosition += button.info.scrollValue;
-                    if (layout.info.scrollPosition < 0) {
-                        layout.info.scrollPosition = 0;
-                    }
-
-                    var content = ccc.view.addTextContent(node.__data.fileContentTokens, layout.info.scrollPosition);
-                    layoutContent.add(content);
-                }
-            }
+            if (intersectedObject.name == "buttonCommit")
+                GUIsettings.clickedHistoryButton = intersectedObject;
 
             objsToTest.forEach( (obj)=> {
 
@@ -724,164 +348,30 @@ ccc.mouse = function() {
         
             });
         }
+        else if (intersectedObject && !intersectedObject.isUI) {
+            console.log(intersectedObject);
 
-        if (intersects[0] != null) {
+            GUIsettings.clickedNode = intersectedObject;
 
-            console.log(intersects[0]);
-            console.log(ccc.view);
+            var nodeInfoBlock = scene.children.filter(obj => { return obj.name == "baseGUI" })[0]
+                                        .children.filter(obj => { return obj.name == "nodeInfoBlock" })[0];
+            nodeInfoBlock.remove(nodeInfoBlock.children.filter(obj => { return obj.name == "nodeInfoSubBlock" })[0]);
+            if (intersectedObject.__data.repoInfo) {
+                var nodeInfoSubBlock = ccc.view.addRepoInfoSubBlock(intersectedObject);
+            }
+            else {
+                var nodeInfoSubBlock = ccc.view.addNodeInfoSubBlock(intersectedObject);
+            }
+            nodeInfoBlock.add(nodeInfoSubBlock);
 
             if (GUIsettings.aimedNode == null) {
-                GUIsettings.aimedNode = intersects[0].object;
+                GUIsettings.aimedNode = intersectedObject;
                 GUIsettings.aimedNode.material.color.setHex( 0x0cbfe9 );
             }
-            else if (GUIsettings.aimedNode != intersects[0].object) {
+            else if (GUIsettings.aimedNode != intersectedObject) {
                 GUIsettings.aimedNode.material.color.set( GUIsettings.aimedNode.__data.color );
-                GUIsettings.aimedNode = intersects[0].object;
+                GUIsettings.aimedNode = intersectedObject;
                 GUIsettings.aimedNode.material.color.setHex( 0x0cbfe9 );
-            }
-
-            // directory
-            if (intersects[0].object.__data.type == "dir") {
-
-                GUIsettings.clickedNode = intersects[0].object;
-                var clickedNode = intersects[0].object;
-
-                console.log(intersects[0].object.__data);
-
-                intersects[0].object.__data.oldX = intersects[0].object.__data.x;
-                intersects[0].object.__data.oldY = intersects[0].object.__data.y;
-                intersects[0].object.__data.oldZ = intersects[0].object.__data.z;
-
-                var textMesh = scene.children.filter(obj => { return obj.name == "baseGUI" })[0]
-                                            .children.filter(obj => { return obj.name == "nodeInfoBlock" })[0]
-                                            .children.filter(obj => { return obj.name == "nodeInfoSubBlock" })[0]
-                                            .children.filter(obj => { return obj.type == "Mesh" })[0];
-                //nodeInfoBlock.remove(nodeInfoBlock.children.filter(obj => { return obj.name == "nodeInfoSubBlock" })[0]);
-                textMesh.geometry.update(ccc.view.updateRepoInfo(clickedNode));
-
-                /*if (clickedNode.__data.repoInfo) {
-                    var nodeInfoSubBlock = ccc.view.addRepoInfoSubBlock(clickedNode);
-                }
-               else {
-                    var nodeInfoSubBlock = ccc.view.addNodeInfoSubBlock(clickedNode);
-                }
-                nodeInfoBlock.add(nodeInfoSubBlock);*/
-
-                //var nodeLayout = ccc.view.createNodeLayout(0, -0.115, 0.01, intersects[0].object.__data.repoInfo);
-                //intersects[0].object.add(nodeLayout);
-
-                // if directory is not expanded
-                /*if (intersects[0].object.__data.expanded == 0) {
-
-                    console.log("Nie je expanded");
-                    intersects[0].object.__data.expanded = 1;
-
-                    // if data are not loaded
-                    if (intersects[0].object.__data.loaded == 0) {
-                        
-                        console.log("Nie je expanded a nie su nacitane data");
-                        intersects[0].object.__data.loaded == 1;
-
-                        ccc.view.model.getContent(intersects[0].object.__data.user, intersects[0].object.__data.repo, intersects[0].object.__data.path).then(function(result) {
-                            ccc.view.updateGraph(result, intersects[0].object.__data.user, intersects[0].object.__data.repo);
-                        });
-                    } else {
-                        console.log("Nie je expanded a su nacitane data");
-                        intersects[0].object.visible = true;
-                    }
-
-                } else {
-                    console.log("Je expanded");
-                    //intersects[0].object.visible = false;
-                    intersects[0].object.__data.expanded = 0;
-                    intersects[0].object.__data.loaded = 1;
-                }*/
-            }
-            else if (intersects[0].object.__data.type == "file") {
-
-                GUIsettings.clickedNode = intersects[0].object;
-                var clickedNode = intersects[0].object;
-
-                var nodeInfoBlock = scene.children.filter(obj => { return obj.name == "baseGUI" })[0].children.filter(obj => { return obj.name == "nodeInfoBlock" })[0];
-                nodeInfoBlock.remove(nodeInfoBlock.children.filter(obj => { return obj.name == "nodeInfoSubBlock" })[0]);
-
-                var nodeInfoSubBlock = ccc.view.addNodeInfoSubBlock(clickedNode);
-                nodeInfoBlock.add(nodeInfoSubBlock);
-
-                //var nodeLayout = ccc.view.createNodeLayout(0, 0, 0.01);
-                //intersects[0].object.add(nodeLayout);
-
-                // images
-                if (intersects[0].object.__data.name.split('.').pop() == 'png') {
-                    console.log(intersects[0].object.__data);
-
-                    intersects[0].object.__data.oldX = intersects[0].object.__data.x;
-                    intersects[0].object.__data.oldY = intersects[0].object.__data.y;
-                    intersects[0].object.__data.oldZ = intersects[0].object.__data.z;
-
-                    ccc.view.model.getImageContent(intersects[0].object.__data.user, intersects[0].object.__data.repository, intersects[0].object.__data.path).then(function(result) {
-                        intersects[0].object.__data.fileContent = result;
-
-                        var layout = ccc.view.createLayout(0, 0, 0);
-                        var layoutHeaderTitle = layout.children.filter(obj => { return obj.name == "layoutHeader" })[0].children.filter(obj => { return obj.name == "layoutHeaderTitle" })[0];
-                        layoutHeaderTitle.add(
-                            new dat.GUIVR.addTextMesh(intersects[0].object.__data.name, { color: 0xffffff, scale: 1.0, align: 'center', position: "center"})
-                            /*new ThreeMeshUI.Text({
-                                fontSize: 0.05,
-                                fontColor: new THREE.Color( 0x000000 ),
-                                content: intersects[0].object.__data.name
-                            })*/
-                        );
-
-                        var content = ccc.view.addImageContent(result.content);
-                        var layoutContent = layout.children.filter(obj => { return obj.name == "layoutContent" })[0];
-                        layoutContent.add(content);
-
-                        intersects[0].object.add(layout);
-                    });
-                } else {
-
-                    // if data are not loaded
-                    if (intersects[0].object.__data.loaded == 0) {
-                        console.log(intersects[0]);
-                        console.log(intersects[0].object);
-
-                        intersects[0].object.__data.oldX = intersects[0].object.__data.x;
-                        intersects[0].object.__data.oldY = intersects[0].object.__data.y;
-                        intersects[0].object.__data.oldZ = intersects[0].object.__data.z;
-
-                        ccc.view.model.getFileContent(intersects[0].object.__data.user, intersects[0].object.__data.repository, intersects[0].object.__data.path).then(function(result) {
-                            intersects[0].object.__data.fileContent = result;
-                            intersects[0].object.__data.fileContentTokens = ccc.view.addTextContentTokens(result, intersects[0].object.__data.name.split('.').pop());
-
-                            var layout = ccc.view.createLayout(0, 0, 0);
-                            var layoutHeaderTitle = layout.children.filter(obj => { return obj.name == "layoutHeader" })[0].children.filter(obj => { return obj.name == "layoutHeaderTitle" })[0];
-                            layoutHeaderTitle.add(
-                                new dat.GUIVR.addTextMesh(intersects[0].object.__data.name, { color: 0xffffff, scale: 1.0, align: 'center', position: "center"})
-                                /*new ThreeMeshUI.Text({
-                                    fontSize: 0.05,
-                                    fontColor: new THREE.Color( 0x000000 ),
-                                    content: intersects[0].object.__data.name
-                                })*/
-                            );
-
-                            var content = ccc.view.addTextContent(intersects[0].object.__data.fileContentTokens, 0);
-                            var layoutContent = layout.children.filter(obj => { return obj.name == "layoutContent" })[0];
-                            layoutContent.add(content);
-
-                            intersects[0].object.add(layout);
-                        });
-
-                    } else {
-                        // intersects[0].object.__data.expanded = 1;
-                    }
-                }
-            }
-        }
-        else {
-            if (GUIsettings.aimedNode) {
-                GUIsettings.aimedNode.material.color.set( GUIsettings.aimedNode.__data.color );
-                GUIsettings.aimedNode = null;
             }
         }
     }
@@ -925,6 +415,317 @@ ccc.mouse = function() {
 		self.pressedKeys.delete(event.key);
 	};
 
+}
+
+function buttonEnterFunction() {
+    console.log("buttonEnterFunction");
+
+    ccc.view.model.getSearchQuery("repositories", newUserText).then(function(result) {
+        if(result.total_count > 0) {
+            ccc.view.resetGraph(result.items);
+        }
+    });
+}
+
+function buttonOpenFunction() {
+    console.log("buttonOpenFunction");
+
+    var clickedNode = GUIsettings.clickedNode;
+                
+    // ak je to priecinok
+    if (clickedNode.__data.type == "dir") {
+        clickedNode.__data.oldX = clickedNode.__data.x;
+        clickedNode.__data.oldY = clickedNode.__data.y;
+        clickedNode.__data.oldZ = clickedNode.__data.z;
+
+        ccc.view.model.getContent(clickedNode.__data.user, clickedNode.__data.repository, clickedNode.__data.path).then(function(result) {
+            ccc.view.updateGraph(result, clickedNode);
+        });
+
+    }
+    // ak je to subor
+    else if (clickedNode.__data.type == "file") {
+
+        // ak je to obrazok
+        if (clickedNode.__data.name.split('.').pop() == 'png') {
+
+            clickedNode.__data.oldX = clickedNode.__data.x;
+            clickedNode.__data.oldY = clickedNode.__data.y;
+            clickedNode.__data.oldZ = clickedNode.__data.z;
+
+            ccc.view.model.getImageContent(clickedNode.__data.user, clickedNode.__data.repository, clickedNode.__data.path).then(function(result) {
+                clickedNode.__data.fileContent = result;
+
+                var layout = ccc.view.createLayout(0, 0, 0);
+                var layoutHeaderTitle = layout.children.filter(obj => { return obj.name == "layoutHeader" })[0].children.filter(obj => { return obj.name == "layoutHeaderTitle" })[0];
+                layoutHeaderTitle.add(
+                    new dat.GUIVR.addTextMesh(clickedNode.__data.name, { color: 0xffffff, scale: 1.0, align: 'center', position: "center"})
+                );
+
+                var content = ccc.view.addImageContent(result.content);
+                var layoutContent = layout.children.filter(obj => { return obj.name == "layoutContent" })[0];
+                layoutContent.add(content);
+
+                clickedNode.add(layout);
+            });
+        }
+        // ak je to textovy subor 
+        else {
+
+            // if data are not loaded
+            if (clickedNode.__data.loaded == 0) {
+
+                clickedNode.__data.oldX = clickedNode.__data.x;
+                clickedNode.__data.oldY = clickedNode.__data.y;
+                clickedNode.__data.oldZ = clickedNode.__data.z;
+
+                ccc.view.model.getFileContent(clickedNode.__data.user, clickedNode.__data.repository, clickedNode.__data.path).then(function(result) {
+                    clickedNode.__data.fileContent = result;
+                    clickedNode.__data.fileContentTokens = ccc.view.addTextContentTokens(result, clickedNode.__data.name.split('.').pop());
+
+                    var layout = ccc.view.createLayout(0, 0, 0);
+                    layout.info.contentTokens = clickedNode.__data.fileContentTokens;
+                    layout.info.type = "fileContent";
+                    var layoutHeaderTitle = layout.children.filter(obj => { return obj.name == "layoutHeader" })[0].children.filter(obj => { return obj.name == "layoutHeaderTitle" })[0];
+                    layoutHeaderTitle.add(
+                        new dat.GUIVR.addTextMesh(clickedNode.__data.name, { color: 0xffffff, scale: 1.0, align: 'center', position: "center"})
+                    );
+
+                    var content = ccc.view.addTextContent(clickedNode.__data.fileContentTokens, 0);
+                    var layoutContent = layout.children.filter(obj => { return obj.name == "layoutContent" })[0];
+                    layoutContent.add(content);
+
+                    clickedNode.add(layout);
+                });
+
+            } else {
+                // intersects[0].object.__data.expanded = 1;
+            }
+        }
+    }
+}
+
+function buttonHistoryFunction() {
+    console.log("buttonHistoryFunction");
+
+    var node = GUIsettings.clickedNode;
+
+    if (node.__data.commitsInfo.length > 0) {
+        var historyLayout = ccc.view.createHistoryLayout(0, 0, 0, node.__data.commitsInfo);
+        var historyLayoutHeaderTitle = historyLayout.children.filter(obj => { return obj.name == "layoutHistoryHeader" })[0].children.filter(obj => { return obj.name == "layoutHistoryHeaderTitle" })[0];
+        historyLayoutHeaderTitle.add(
+            new dat.GUIVR.addTextMesh("Commity pre: " + node.__data.name, { color: 0xffffff, scale: 1.0, align: 'center', position: "center"})
+        );
+
+        var historyContent = ccc.view.addHistoryContent(node.__data.commitsInfo, 0);
+        var layoutHistoryContent = historyLayout.children.filter(obj => { return obj.name == "layoutHistoryContent" })[0];
+        layoutHistoryContent.add(historyContent);
+
+        node.add(historyLayout);
+    } 
+    else {
+        ccc.view.model.getFileCommitsInfo(node.__data.user, node.__data.repository, node.__data.path).then(function(result) {
+            result.forEach(commit => {
+
+                var date = new Date(commit.commit.author.date);
+                date = date.toLocaleDateString('sk-SK', dateOptions);
+
+                node.__data.commitsInfo.push({
+                    message: commit.commit.message.split('\n')[0],
+                    author: commit.commit.author.name,
+                    date: date,
+                    sha: commit.sha
+                });
+            });
+
+            var historyLayout = ccc.view.createHistoryLayout(0, 0, 0, node.__data.commitsInfo);
+            var historyLayoutHeaderTitle = historyLayout.children.filter(obj => { return obj.name == "layoutHistoryHeader" })[0].children.filter(obj => { return obj.name == "layoutHistoryHeaderTitle" })[0];
+            historyLayoutHeaderTitle.add(
+                new dat.GUIVR.addTextMesh("Commity pre: " + node.__data.name, { color: 0xffffff, scale: 1.0, align: 'center', position: "center"})
+            );
+
+            var historyContent = ccc.view.addHistoryContent(node.__data.commitsInfo, 0);
+            var layoutHistoryContent = historyLayout.children.filter(obj => { return obj.name == "layoutHistoryContent" })[0];
+            layoutHistoryContent.add(historyContent);
+
+            node.add(historyLayout);
+        });
+    }
+}
+
+function buttonCommitFunction(intersectedObject) {
+    console.log("buttonCommitFunction");
+
+    console.log(intersectedObject);
+    var node = intersectedObject.parent.parent.parent;
+    var clickedHistoryButton = GUIsettings.clickedHistoryButton;
+    console.log(node);
+    console.log(clickedHistoryButton);
+
+    if (!clickedHistoryButton)
+        return;
+
+    ccc.view.model.getFileCommitContent(node.__data.user, node.__data.repository, node.__data.path, clickedHistoryButton.info.sha).then(function(result) {
+        var commitInfo = node.__data.commitsInfo.filter(obj => { return obj.sha == clickedHistoryButton.info.sha })[0];
+        commitInfo.content = result;
+        commitInfo.contentTokens = ccc.view.addTextContentTokens(result, node.__data.name.split('.').pop());
+
+        var layout = ccc.view.createLayout(0, 0, 0);
+        layout.info.contentTokens = commitInfo.contentTokens;
+        layout.info.type = "history";
+        var layoutHeaderTitle = layout.children.filter(obj => { return obj.name == "layoutHeader" })[0].children.filter(obj => { return obj.name == "layoutHeaderTitle" })[0];
+        layoutHeaderTitle.add(
+            new dat.GUIVR.addTextMesh(node.__data.name + " (commit \"" + clickedHistoryButton.info.message + "\")", { color: 0xffffff, scale: 1.0, align: 'center', position: "center"})
+        );
+
+        var content = ccc.view.addTextContent(commitInfo.contentTokens, 0);
+        var layoutContent = layout.children.filter(obj => { return obj.name == "layoutContent" })[0];
+        layoutContent.add(content);
+
+        node.add(layout);
+    });
+}
+
+function buttonCommitDiffFunction(intersectedObject) {
+    console.log("buttonCommitFunction");
+
+    console.log(intersectedObject);
+    var node = intersectedObject.parent.parent.parent;
+    var clickedHistoryButton = GUIsettings.clickedHistoryButton;
+    console.log(node);
+    console.log(clickedHistoryButton);
+
+    if (!clickedHistoryButton)
+        return;
+
+    ccc.view.model.getFileCommitInfo(node.__data.user, node.__data.repository, clickedHistoryButton.info.sha).then(function(result) {
+        var commitInfo = node.__data.commitsInfo.filter(obj => { return obj.sha == clickedHistoryButton.info.sha })[0];
+        commitInfo.diffContent = result.files.filter(obj => { return obj.filename == node.__data.path })[0].patch;
+        commitInfo.diffContentTokens = ccc.view.addTextContentTokens(result.files.filter(obj => { return obj.filename == node.__data.path })[0].patch, node.__data.path.split('.').pop());
+
+        var layout = ccc.view.createLayout(0, 0, 0);
+        layout.info.contentTokens = commitInfo.diffContentTokens;
+        layout.info.type = "historyDiff";
+        var layoutHeaderTitle = layout.children.filter(obj => { return obj.name == "layoutHeader" })[0].children.filter(obj => { return obj.name == "layoutHeaderTitle" })[0];
+        layoutHeaderTitle.add(
+            new dat.GUIVR.addTextMesh(node.__data.name + " (diff commit " + clickedHistoryButton.info.message + ")", { color: 0xffffff, scale: 1.0, align: 'center', position: "center"})
+        );
+
+        var content = ccc.view.addDiffTextContent(commitInfo.diffContentTokens, 0);
+        var layoutContent = layout.children.filter(obj => { return obj.name == "layoutContent" })[0];
+        layoutContent.add(content);
+
+        layout.position.set(0, 0, 0);
+        scene.add(layout);
+    });
+}
+
+function buttonKeyboardFunction() {
+    console.log("buttonKeyboardFunction");
+
+    var keyboardTop = scene.children.filter(obj => { return obj.name == "keyboardTop" })[0];
+    var keyboardBottom = scene.children.filter(obj => { return obj.name == "keyboardBottom" })[0];
+
+    if (keyboardTop.visible == true && keyboardBottom.visible == true) {
+        keyboardTop.visible = false;
+        keyboardBottom.visible = false;
+    } else {
+        keyboardTop.visible = true;
+        keyboardBottom.visible = true;
+    }
+}
+
+function buttonStartTestFunction() {
+    console.log("buttonStartTestFunction");
+
+    startTime = new Date();
+
+    numberOfClicks = 0;
+    document.addEventListener("click", function(event){
+        numberOfClicks++;
+        console.log(numberOfClicks);
+    });
+
+    numberOfKeysPressed = 0;
+    document.addEventListener("keyup", function(event){
+        numberOfKeysPressed++;
+        console.log(numberOfKeysPressed);
+    });
+}
+
+function buttonEndTestFunction() {
+    console.log("buttonEndTestFunction");
+
+    endTime = new Date();
+    var timeDiff = endTime - startTime;
+    timeDiff /= 1000;
+    var seconds = Math.round(timeDiff);
+}
+
+function buttonHoreDoleFunction(intersectedObject) {
+    console.log("buttonHoreDoleFunction");
+
+    var button = intersectedObject;
+    var layout = intersectedObject.parent.parent;
+    var node = intersectedObject.parent.parent.parent;
+
+    console.log(node);
+    console.log(layout);
+    console.log(intersectedObject);
+
+    if (layout.info.scrollPosition + button.info.scrollValue > layout.info.contentTokens.length) {
+        return;
+    }
+
+    var layoutContent = layout.children.filter(obj => { return obj.name == "layoutContent" })[0];
+    layoutContent.remove(layoutContent.children.filter(obj => { return obj.name == "fileContentContainer" })[0]);
+
+    layout.info.scrollPosition += button.info.scrollValue;
+    if (layout.info.scrollPosition < 0) {
+        layout.info.scrollPosition = 0;
+    }
+
+    if (layout.info.type == "historyDiff") {
+        var content = ccc.view.addDiffTextContent(layout.info.contentTokens, layout.info.scrollPosition);
+    } else {
+        var content = ccc.view.addTextContent(layout.info.contentTokens, layout.info.scrollPosition);
+    }
+    layoutContent.add(content);
+}
+
+function buttonHistoryHoreDoleFunction(intersectedObject) {
+    console.log("buttonHistoryHoreDoleFunction");
+
+    var button = intersectedObject;
+    var layout = intersectedObject.parent.parent;
+    var node = intersectedObject.parent.parent.parent;
+
+    console.log(button);
+    console.log(layout);
+    console.log(node);
+    // tu som skoncil
+
+    if (layout.info.scrollPosition + button.info.scrollValue > node.__data.commitsInfo.length) {
+        return;
+    }
+
+    var layoutContent = layout.children.filter(obj => { return obj.name == "layoutHistoryContent" })[0];
+    var historyContentContainer = layoutContent.children.filter(obj => { return obj.name == "historyContentContainer" })[0];
+    historyContentContainer.children.forEach(child => {
+        const index = objsToTest.indexOf(child);
+        if (index > -1) {
+            objsToTest.splice(index, 1);
+        }
+    });
+    layoutContent.remove(layoutContent.children.filter(obj => { return obj.name == "historyContentContainer" })[0]);
+
+    layout.info.scrollPosition += button.info.scrollValue;
+    if (layout.info.scrollPosition < 0) {
+        layout.info.scrollPosition = 0;
+    }
+
+    var content = ccc.view.addHistoryContent(node.__data.commitsInfo, layout.info.scrollPosition);
+    layoutContent.add(content);
 }
 
 function raycast(raycaster) {

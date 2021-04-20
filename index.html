@@ -26,6 +26,7 @@
             var newUserTextMesh;
             const dateOptions = { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' };
             var GUIsettings = {
+                'clickedHistoryButton': null,
                 'clickedNode': null,
                 'aimedNode': null,
                 'folderShape': {
@@ -77,11 +78,16 @@
 
         <!-- TO DO LIST
         expand/invisible nodes - len opravit, lebo fungovalo
-        presahovanie textu za okraj (pridat newline)
         rovnako velke znaky, zmena fontu
+        scenare navrhy
+        pripravit dokument na evaluaciu + spisat priebeh
 
-DONE    velkost photonov a linkov
-DONE    zmena textu
+PART    prerobit datGUI na normalne
+PART    HSV HSL farby / js color maps = (HSV 120, 100, 100) => (HSV 000, 100, 100)
+
+DONE    zvysit opacity linkov
+DONE    pozriet grid a ked tak dat prec
+DONE    presahovanie textu za okraj (pridat newline)
         
 
         -->
@@ -100,13 +106,21 @@ DONE    zmena textu
             scene = new THREE.Scene();
             var model, view, controller;
 
-            var roomSize = 10;
+            /*var roomSize = 10;
             var room = new THREE.Mesh(
                 new THREE.BoxGeometry( roomSize, roomSize, roomSize, 8, 8, 8 ),
                 new THREE.MeshBasicMaterial( { color: 0x404040, wireframe: true } )
             );
             room.position.y = roomSize / 2.0;
-            scene.add( room );
+            scene.add( room );*/
+
+            var floor = new THREE.Mesh(
+                new THREE.PlaneGeometry( 15, 15, 20, 20 ),
+                new THREE.MeshBasicMaterial( { color: 0x404040, wireframe: true } )
+            );
+            floor.material.side = THREE.DoubleSide;
+            floor.rotation.set(Math.PI / -2, 0, 0)
+            scene.add( floor ); 
             
             // camera
             camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.1, 20 );
@@ -163,8 +177,8 @@ DONE    zmena textu
             scene.add(view.myGraph);
 
             controller = MVC.Controller;
-            controller.init('mouse', view);
-            //controller.init('vive', view);
+            //controller.init('mouse', view);
+            controller.init('vive', view);
 
             // test s GUI
             var baseGUI = view.createBaseGUI();
@@ -177,22 +191,6 @@ DONE    zmena textu
             const directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
             directionalLight.position.set( 0, 1, 0.5 );
             scene.add( directionalLight );
-
-            /*view.model.getFileContent("MartinSith", "Sandesriner", "index.html").then(function(result) {
-                var fileContentTokens = view.addTextContentTokens(result, "html");
-
-                var layout = view.createLayout(0, 0, 0);
-                var layoutHeaderTitle = layout.children.filter(obj => { return obj.name == "layoutHeader" })[0].children.filter(obj => { return obj.name == "layoutHeaderTitle" })[0];
-                layoutHeaderTitle.add(
-                    new dat.GUIVR.addTextMesh( "index.html", { color: 0xffffff, scale: 1.0, align: 'left' })
-                );
-
-                var content = view.addTextContent(fileContentTokens, 0);
-                var layoutContent = layout.children.filter(obj => { return obj.name == "layoutContent" })[0];
-                layoutContent.add(content);
-
-                scene.add(layout);
-            });*/
 
             function addToFolder(object, folder) {
                 for (var k in object) {
@@ -359,7 +357,6 @@ DONE    zmena textu
             }
 
             animate();
-            initGUI();
             makeUI();
             
         </script>

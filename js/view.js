@@ -244,7 +244,7 @@ vvv.initGraph = function() {
             .dagLevelDistance(0.4)
             .linkColor(() => 'rgba(255,255,255,0.2)')
             .linkWidth(0.02)
-            .linkOpacity(0.4)
+            .linkOpacity(0.7)
             .linkDirectionalParticles(1)
             .linkDirectionalParticleSpeed('particleSpeed')
             .linkDirectionalParticleWidth(0.04)
@@ -451,7 +451,7 @@ vvv.resetGraph = function(data) {
             name = repo.name,
             expanded = 0,
             color = "#FFFF00",
-            commitCount = 10,
+            commitCount = null,
             oldX = null,
             oldY = null,
             oldZ = null,
@@ -652,6 +652,32 @@ function fixToken(token, type) {
         for (i = 0; i < subTokens.length; i++) {
 
             if (subTokens[i] != "")
+
+                // fix kvoly diff
+                if (subTokens[i].startsWith("-")) {
+                    subTokens[i] = subTokens[i].substring(1);
+                    fixedTokens.push({
+                        type: type, 
+                        content: "-"
+                    });
+                }
+                if (subTokens[i].startsWith("+")) {
+                    subTokens[i] = subTokens[i].substring(1);
+                    fixedTokens.push({
+                        type: type, 
+                        content: "+"
+                    });
+                }
+
+                // fix kvoly medzeram
+                while (subTokens[i].startsWith("    ")) {
+                    subTokens[i] = subTokens[i].substring(4);
+                    fixedTokens.push({
+                        type: type, 
+                        content: "    "
+                    });
+                }
+
                 fixedTokens.push({
                     type: type, 
                     content: subTokens[i]
@@ -665,6 +691,15 @@ function fixToken(token, type) {
         }
     }
     else {
+        // fix kvoly medzeram
+        while (token.startsWith("    ")) {
+            token = token.substring(4);
+            fixedTokens.push({
+                type: type, 
+                content: "    "
+            });
+        }
+
         fixedTokens.push({
             type: type, 
             content: token
@@ -849,6 +884,8 @@ vvv.addTextContentTokens = function(text, fileExtension) {
     var tokenRows = [];
     var tokenRow = [];
     var i = 0;
+    var lineLength = 75;
+    var tokenRowLength = 0;
     let mainTokens = Prism.tokenize(text, Prism.languages[fileExtension]);
 
     mainTokens.forEach(mainToken => {
@@ -857,16 +894,32 @@ vvv.addTextContentTokens = function(text, fileExtension) {
         subTokens.forEach(token => {
             var tokenInfo = getTokenInfo(token);
 
+            //console.log(tokenInfo.content);
             if (tokenInfo.content != "") {
+
+                // fix na dlhe riadky
+                if (tokenRowLength + tokenInfo.content.length > lineLength) {
+                    tokenRow.push({
+                        fontColor: null, 
+                        content: "\n"
+                    });
+
+                    tokenRows.push(tokenRow);
+                    tokenRow = [];
+                    tokenRowLength = 0;
+                }
+
                 tokenRow.push({
                     fontColor: tokenInfo.fontColor, 
                     content: tokenInfo.content
                 });
+                tokenRowLength += tokenInfo.content.length;
             }
 
             if (tokenInfo.content == "\n") {
                 tokenRows.push(tokenRow);
                 tokenRow = [];
+                tokenRowLength = 0;
             }
             
         })
@@ -970,13 +1023,22 @@ vvv.addDiffTextContent = function(tokenRows, scrollRow) {
                 block = normalBlock;
             }
 
+            var mesh, x = 0.02;
             tokenRows[i].forEach(token => {
+                mesh = dat.GUIVR.addTextMesh( token.content, { color: token.fontColor, scale: 1.0, align: 'left' });
+                mesh.position.x -= 0.91 - x;
+                if (token.content.includes("\n")) {
+                    x = 0.02;
+                }
+                x += mesh.userData.width;
+
                 block.add(
-                    new ThreeMeshUI.Text({
+                    mesh
+                    /*new ThreeMeshUI.Text({
                         fontSize: 0.035,
                         fontColor: new THREE.Color(token.fontColor),
                         content: token.content
-                    })
+                    })*/
                 );
                 
             })
@@ -1128,6 +1190,7 @@ vvv.createBaseGUI = function() {
         width: 1,
         padding: 0.025,
         alignContent: "left",
+        interLine: 0.05,
         backgroundOpacity: 0.6,
         fontFamily: './js/' + fontFilesName + '.json',
         fontTexture: './js/' + fontFilesName + '.png',
@@ -1160,8 +1223,25 @@ vvv.createBaseGUI = function() {
 
     const buttonEndTest = createButton(0.15, 0.15, "buttonEndTest", " End Test");
 
-    baseGUI.add(buttonKeyboard, space, buttonGraphGUI, space2, buttonStartTest, space3, buttonEndTest);
-    objsToTest.push(buttonKeyboard, buttonGraphGUI, buttonStartTest, buttonEndTest);
+    // otvor a historia
+    const buttonOpen = createButton(0.15, 0.15, "buttonOpen", "Open");
+
+    const space4 = new ThreeMeshUI.InlineBlock({
+        height: 0.15,
+        width: 0.05,
+        backgroundOpacity: 0,
+    });
+
+    const buttonHistory = createButton(0.15, 0.15, "buttonHistory", "History");
+
+    const space5 = new ThreeMeshUI.InlineBlock({
+        height: 0.15,
+        width: 0.20,
+        backgroundOpacity: 0,
+    });
+
+    baseGUI.add(buttonKeyboard, space, buttonGraphGUI, space2, buttonStartTest, space3, buttonEndTest, buttonOpen, space4, buttonHistory, space5);
+    objsToTest.push(buttonKeyboard, buttonGraphGUI, buttonStartTest, buttonEndTest, buttonOpen, buttonHistory);
 
     // sem
     const nodeInfoBlock = new ThreeMeshUI.Block({
@@ -1262,8 +1342,11 @@ vvv.addRepoInfoSubBlock = function(node) {
         topics += topic + " "
     })
 
+    var repoDescription = node.__data.repoInfo.description.replace(/\p{Emoji}/ug, (m, idx) => `[e-${m.codePointAt(0).toString(16)}]`)
+    repoDescription = repoDescription.length > 50 ? repoDescription.substring(0, 40) + "..." : repoDescription;
+
     var mesh = new dat.GUIVR.addTextMesh( "Nazov: "        + node.__data.repoInfo.name + "\n"
-                                        + "Popis: "        + node.__data.repoInfo.description.replace(/\p{Emoji}/ug, (m, idx) => `[e-${m.codePointAt(0).toString(16)}]`) + "\n"
+                                        + "Popis: "        + repoDescription + "\n"
                                         + "Topics: "       + topics + "\n"
                                         + "Stars: "        + node.__data.repoInfo.stars + "\n"
                                         + "Forks: "        + node.__data.repoInfo.forks + "\n"
@@ -1271,86 +1354,38 @@ vvv.addRepoInfoSubBlock = function(node) {
                                         + "Language: "     + node.__data.repoInfo.language + "\n"
                                         + "Created: "      + createdDate.toLocaleDateString('sk-SK', dateOptions) + "\n"
                                         + "Updated: "      + updatedDate.toLocaleDateString('sk-SK', dateOptions) + "\n"
-                                        , { color: 0xffffff, scale: 1.0, align: 'left'})
+                                        , { color: 0xffffff, scale: 1.0, align: 'left'});
 
     nodeInfoSubBlock.add(
         mesh
-        /*new ThreeMeshUI.Text({
-            fontSize: 0.03,
-            fontColor: new THREE.Color(0xd3d3d3),
-            content: "Nazov: " + node.__data.repoInfo.name + "\n"
-        })*/
     );
 
     mesh.position.x -= 0.5;
     mesh.position.y -= 0.5;
+ 
+    return nodeInfoSubBlock;
+}
 
-    /*nodeInfoSubBlock.add(
-        new ThreeMeshUI.Text({
-            fontSize: 0.03,
-            fontColor: new THREE.Color(0xd3d3d3),
-            content: "Popis: " + node.__data.repoInfo.description.replace(/\p{Emoji}/ug, (m, idx) => `[e-${m.codePointAt(0).toString(16)}]`) + "\n"
-        })
-    );
-
-    nodeInfoSubBlock.add(
-        new ThreeMeshUI.Text({
-            fontSize: 0.03,
-            fontColor: new THREE.Color(0xd3d3d3),
-            content: "Topics: "
-        })
-    );
-
-    node.__data.repoInfo.topics.forEach(topic => {
-        nodeInfoSubBlock.add(
-            new ThreeMeshUI.Text({
-                fontSize: 0.03,
-                fontColor: new THREE.Color(0xd3d3d3),
-                content: topic + " "
-            })
-        );
-    });
-
-    nodeInfoSubBlock.add(
-        new ThreeMeshUI.Text({
-            fontSize: 0.03,
-            fontColor: new THREE.Color(0xd3d3d3),
-            content: "\nStars: " + node.__data.repoInfo.stars + "\nForks: " + node.__data.repoInfo.forks + " \nWatchers: " + node.__data.repoInfo.watchers + "\n"
-        })
-    );
-
-    nodeInfoSubBlock.add(
-        new ThreeMeshUI.Text({
-            fontSize: 0.03,
-            fontColor: new THREE.Color(0xd3d3d3),
-            content: "Language: " + node.__data.repoInfo.language + "\n"
-        })
-    );
-
+vvv.updateNodeInfo = function(node) {
     const createdDate = new Date(node.__data.repoInfo.createdDate);
     const updatedDate = new Date(node.__data.repoInfo.updatedDate);
-    nodeInfoSubBlock.add(
-        new ThreeMeshUI.Text({
-            fontSize: 0.03,
-            fontColor: new THREE.Color(0xd3d3d3),
-            content: "Created: " + createdDate.toLocaleDateString('sk-SK', dateOptions) + "\nUpdated: " + updatedDate.toLocaleDateString('sk-SK', dateOptions) + "\n"
-        })
-    );*/
 
-    /*
-    repoInfo = {
-                owner: repo.owner.login,
-                name: repo.name,
-                createdDate: repo.created_at,
-                updatedDate: repo.updated_at,
-                language: repo.language,
-                size: repo.size,
-                forks: repo.forks,
-                score: repo.score,
-                watchers: repo.watchers
-            };
-    */ 
-    return nodeInfoSubBlock;
+    var topics = "";
+    node.__data.repoInfo.topics.forEach(topic => { 
+        topics += topic + " "
+    })
+
+    var newText =     "Nazov: "        + node.__data.repoInfo.name + "\n"
+                    + "Popis: "        + node.__data.repoInfo.description.replace(/\p{Emoji}/ug, (m, idx) => `[e-${m.codePointAt(0).toString(16)}]`) + "\n"
+                    + "Topics: "       + topics + "\n"
+                    + "Stars: "        + node.__data.repoInfo.stars + "\n"
+                    + "Forks: "        + node.__data.repoInfo.forks + "\n"
+                    + "Watchers: "     + node.__data.repoInfo.watchers + "\n"
+                    + "Language: "     + node.__data.repoInfo.language + "\n"
+                    + "Created: "      + createdDate.toLocaleDateString('sk-SK', dateOptions) + "\n"
+                    + "Updated: "      + updatedDate.toLocaleDateString('sk-SK', dateOptions) + "\n";
+
+    return newText;
 }
 
 vvv.addNodeInfoSubBlock = function(node) {
@@ -1367,56 +1402,26 @@ vvv.addNodeInfoSubBlock = function(node) {
         name: "nodeInfoSubBlock"
     });
 
-    nodeInfoSubBlock.add(
-        new ThreeMeshUI.Text({
-            fontSize: 0.03,
-            fontColor: new THREE.Color(0xd3d3d3),
-            content: "Nazov: " + node.__data.name + "\n"
-        })
-    );
-
-    nodeInfoSubBlock.add(
-        new ThreeMeshUI.Text({
-            fontSize: 0.03,
-            fontColor: new THREE.Color(0xd3d3d3),
-            content: "Cesta k suboru: " + node.__data.repository + "/" + node.__data.path + "\n"
-        })
-    );
-
-    if (node.__data.type == "file") var type = node.__data.name.split('.').pop();
-    else var type = node.__data.type;
-    nodeInfoSubBlock.add(
-        new ThreeMeshUI.Text({
-            fontSize: 0.03,
-            fontColor: new THREE.Color(0xd3d3d3),
-            content: "Typ suboru: " + type + "\n"
-        })
-    );
-
-    nodeInfoSubBlock.add(
-        new ThreeMeshUI.Text({
-            fontSize: 0.03,
-            fontColor: new THREE.Color(0xd3d3d3),
-            content: "Velkost: " + node.__data.size + " Bajtov\n"
-        })
-    );
-
-    nodeInfoSubBlock.add(
-        new ThreeMeshUI.Text({
-            fontSize: 0.03,
-            fontColor: new THREE.Color(0xd3d3d3),
-            content: "Pocet commitov: " + node.__data.commitCount + "\n"
-        })
-    );
-
     const updatedDate = new Date(node.__data.lastUpdateDate);
+    if (node.__data.type == "file") 
+        var type = node.__data.name.split('.').pop();
+    else 
+        var type = node.__data.type;
+
+    var mesh = new dat.GUIVR.addTextMesh( "Nazov: "          + node.__data.name + "\n"
+                                        + "Cesta k suboru: " + node.__data.repository + "/" + node.__data.path + "\n"
+                                        + "Typ suboru: "     + type + "\n"
+                                        + "Velkost: "        + node.__data.size + " Bajtov\n"
+                                        + "Pocet commitov: " + node.__data.commitCount + "\n"
+                                        + "Updated: "        + updatedDate.toLocaleDateString('sk-SK', dateOptions) + "\n"
+                                        , { color: 0xffffff, scale: 1.0, align: 'left'});
+
     nodeInfoSubBlock.add(
-        new ThreeMeshUI.Text({
-            fontSize: 0.03,
-            fontColor: new THREE.Color(0xd3d3d3),
-            content: "Updated: " + updatedDate.toLocaleDateString('sk-SK', dateOptions) + "\n"
-        })
+        mesh
     );
+
+    mesh.position.x -= 0.49;
+    mesh.position.y -= 0.3;
 
     return nodeInfoSubBlock;
 }
@@ -1430,6 +1435,7 @@ createButton = function(width, height, name, content) {
         justifyContent: "center",
         backgroundColor: new THREE.Color( 0xd3d3d3 ),
         backgroundOpacity: 0.3,
+        info: {},
         name: name
     }).add(
         new dat.GUIVR.addTextMesh(content, { color: 0xffffff, scale: 1.0, align: 'center', position: "center"})
@@ -1659,8 +1665,8 @@ createLayoutScroll = function() {
 
 vvv.createHistoryLayout = function(posX, posY, posZ, commitsInfo) {
 
-    var width = 0.41;
-    var height = commitsInfo.length * 0.1 + ((commitsInfo.length - 1) * 0.015) + 0.02;
+    var width = 1.2;
+    var height = 4 * 0.15 + ((4 - 1) * 0.015) + 0.14;
 
     const fileHistoryContainer = new ThreeMeshUI.Block({
         width: width,
@@ -1670,20 +1676,154 @@ vvv.createHistoryLayout = function(posX, posY, posZ, commitsInfo) {
         fontTexture: './js/' + fontFilesName + '.png',
         interLine: 0.015,
         alignContent: "left",
+        info: {scrollPosition: 0},
         backgroundOpacity: 0.8,
         name: "fileHistoryContainer"
     }); 
 
-    commitsInfo.forEach(commitInfo => {
-        var commitButton = createHistoryButton(0.38, 0.1, commitInfo);
-        fileHistoryContainer.add(commitButton);
-        objsToTest.push(commitButton);
+    const historyLayoutHeader = createHistoryLayoutHeader();
+
+    const layoutHistoryContent = new ThreeMeshUI.InlineBlock({
+        height: height-0.15,
+        width: 0.97,
+        backgroundColor: new THREE.Color( 0x2d2d2d ),
+        backgroundOpacity: 1,
+        name: "layoutHistoryContent"
     });
+
+    const space = new ThreeMeshUI.InlineBlock({
+        height: height-0.15,
+        width: 0.05,
+        backgroundOpacity: 0,
+    });
+
+    const layoutHistoryScroll = new ThreeMeshUI.InlineBlock({
+        height: height-0.15,
+        width: 0.15,
+        backgroundColor: new THREE.Color( 0x2d2d2d ),
+        backgroundOpacity: 1,
+        name: "layoutHistoryScroll"
+    });
+
+    for (i = 0; i < 4; i++) {
+        var commitSubButton = createHistorySubButton(i + 1);
+        layoutHistoryScroll.add(commitSubButton);
+        objsToTest.push(commitSubButton);
+    }
 
     fileHistoryContainer.position.set(0 + width/2 + 0.175, 0 - height/2 + 0.175, 0);
     //console.log(fileHistoryContainer);
+    fileHistoryContainer.add(historyLayoutHeader, layoutHistoryContent, space, layoutHistoryScroll);
 
     return fileHistoryContainer;
+}
+
+createHistoryLayoutHeader = function() {
+
+    // hlavicka (nazov, minimalizovat, zavriet)
+    const layoutHistoryHeader = new ThreeMeshUI.InlineBlock({
+        height: 0.1,
+        width: 1.17,
+        name: "layoutHistoryHeader"
+    })
+
+    // title
+    const layoutHistoryHeaderTitle = new ThreeMeshUI.InlineBlock({
+        height: 0.1,
+        width: 0.82,
+        alignContent: "center",
+        justifyContent: "center",
+        backgroundColor: new THREE.Color( 0xd3d3d3 ),
+        backgroundOpacity: 0.3,
+        name: "layoutHistoryHeaderTitle"
+    });
+
+    const layoutHistoryHeaderSpace = new ThreeMeshUI.InlineBlock({
+        height: 0.1,
+        width: 0.12,
+        backgroundOpacity: 0,
+    });
+
+    // minimalize
+    const layoutHistoryHeaderMinimalize = new ThreeMeshUI.InlineBlock({
+        height: 0.1,
+        width: 0.1,
+        backgroundColor: new THREE.Color( 0xd3d3d3 ),
+        backgroundOpacity: 0.3,
+        alignContent: "center",
+        justifyContent: "center",
+        name: "buttonHistoryMinimalize"
+    }).add(
+        new dat.GUIVR.addTextMesh("_", { color: 0xffffff, scale: 1.0, align: 'center', position: "center"})
+    );
+
+    const layoutHistoryHeaderSpace2 = new ThreeMeshUI.InlineBlock({
+        height: 0.1,
+        width: 0.02,
+        backgroundOpacity: 0,
+    });
+
+    // close
+    const layoutHistoryHeaderClose = new ThreeMeshUI.InlineBlock({
+        height: 0.1,
+        width: 0.1,
+        backgroundColor: new THREE.Color( 0xd3d3d3 ),
+        backgroundOpacity: 0.3,
+        alignContent: "center",
+        justifyContent: "center",
+        name: "buttonHistoryClose"
+    }).add(
+        new dat.GUIVR.addTextMesh("X", { color: 0xffffff, scale: 1.0, align: 'center', position: "center"})
+    );
+
+    layoutHistoryHeader.add(layoutHistoryHeaderTitle, layoutHistoryHeaderSpace, layoutHistoryHeaderMinimalize, layoutHistoryHeaderSpace2, layoutHistoryHeaderClose);
+    objsToTest.push(layoutHistoryHeaderMinimalize, layoutHistoryHeaderClose);
+
+    return layoutHistoryHeader;
+}
+
+createHistorySubButton = function(row) {
+    var buttonKeyboard;
+    if (row == 1) {
+        buttonKeyboard = createButton(0.15, 0.15, "buttonHistoryUp", ">");
+        buttonKeyboard.info = {scrollValue: -4, type: 'historyButton', scrollDirection: "up"};
+    }
+    if (row == 2) {
+        buttonKeyboard = createButton(0.15, 0.15, "buttonHistoryDiff", "Show diff");
+    }
+    if (row == 3) {
+        buttonKeyboard = createButton(0.15, 0.15, "buttonHistoryOpen", "Show file");
+    }
+    if (row == 4) {
+        buttonKeyboard = createButton(0.15, 0.15, "buttonHistoryDown", "<");
+        buttonKeyboard.info = {scrollValue: 4, type: 'historyButton', scrollDirection: "down"};
+    }
+    return buttonKeyboard;
+}
+
+vvv.addHistoryContent = function(commitsInfo, scrollRow) {
+
+    const container = new ThreeMeshUI.Block({
+        height: 0.635,
+        width: 0.95,
+        //padding: 0.02,
+        fontFamily: './js/' + fontFilesName + '.json',
+        fontTexture: './js/' + fontFilesName + '.png',
+        interLine: 0.015,
+        //alignContent: "left",
+        backgroundOpacity: 0,
+        name: "historyContentContainer"
+    });
+
+    for (i = scrollRow; i < scrollRow + 4; i++) {
+        if (commitsInfo[i]) {
+            var commitButton = createHistoryButton(0.95, 0.15, commitsInfo[i]);
+            container.add(commitButton);
+            objsToTest.push(commitButton);
+        }
+    }
+
+    return container;
 }
 
 createHistoryButton = function(width, height, commitInfo) {
@@ -1697,27 +1837,19 @@ createHistoryButton = function(width, height, commitInfo) {
         backgroundOpacity: 0.3,
         name: "buttonCommit",
         info: commitInfo,
-    }).add(
-        new dat.GUIVR.addTextMesh(commitInfo.message  + "\n"
-                                  + commitInfo.author + "\n"
-                                  + commitInfo.date        
-        , { color: 0xffffff, scale: 1.0, align: 'center', position: "center"})
-        /*new ThreeMeshUI.Text({
-            fontSize: 0.02,
-            fontColor: new THREE.Color( 0xffffff ),
-            content: commitInfo.message  + "\n"
-        }),
-        new ThreeMeshUI.Text({
-            fontSize: 0.02,
-            fontColor: new THREE.Color( 0xffffff ),
-            content: commitInfo.author + "\n"
-        }),
-        new ThreeMeshUI.Text({
-            fontSize: 0.02,
-            fontColor: new THREE.Color( 0xffffff ),
-            content: commitInfo.date
-        }),*/
-    );
+    })
+
+    var commitMessage = commitInfo.message.length > 50 ? commitInfo.message.substring(0, 50) + "..." : commitInfo.message;
+
+    var mesh = new dat.GUIVR.addTextMesh(commitMessage  + "\n"
+                                         + commitInfo.author + "\n"
+                                         + commitInfo.date
+        , { color: 0xffffff, scale: 1.0, align: 'center'/*, position: "center"*/})
+    
+    mesh.position.x -= width/2;
+    mesh.position.y -= 0.09;
+
+    container.add(mesh);
 
     return container;
 }
@@ -1868,28 +2000,28 @@ function makeUI() {
                         //userText.set({ content: userText.content += '+user:' });
                         newUserText += "+user";
                         newUserTextMesh.geometry.update(newUserText);
-                        //newUserTextMesh.position.x = 0 - (newUserTextMesh.userData.width() / 2);
+                        //newUserTextMesh.position.x = 0 - (newUserTextMesh.userData.width / 2);
                         break;
                     
                     case 'name' :
                         //userText.set({ content: userText.content += '+name:' });
                         newUserText += "+name";
                         newUserTextMesh.geometry.update(newUserText);
-                        //newUserTextMesh.position.x = 0 - (newUserTextMesh.userData.width() / 2);
+                        //newUserTextMesh.position.x = 0 - (newUserTextMesh.userData.width / 2);
                         break;
 
                     case 'language' :
                         //userText.set({ content: userText.content += '+language:' });
                         newUserText += "+language";
                         newUserTextMesh.geometry.update(newUserText);
-                        //newUserTextMesh.position.x = 0 - (newUserTextMesh.userData.width() / 2);
+                        //newUserTextMesh.position.x = 0 - (newUserTextMesh.userData.width / 2);
                         break;
 
                     case 'topic' :
                         //userText.set({ content: userText.content += '+topic:' });
                         newUserText += "+topic";
                         newUserTextMesh.geometry.update(newUserText);
-                        //newUserTextMesh.position.x = 0 - (newUserTextMesh.userData.width() / 2);
+                        //newUserTextMesh.position.x = 0 - (newUserTextMesh.userData.width / 2);
                         break;
 
                     // doplnkove
@@ -1897,14 +2029,14 @@ function makeUI() {
                         //userText.set({ content: userText.content += '&sort=' });
                         newUserText += "&sort=";
                         newUserTextMesh.geometry.update(newUserText);
-                        //newUserTextMesh.position.x = 0 - (newUserTextMesh.userData.width() / 2);
+                        //newUserTextMesh.position.x = 0 - (newUserTextMesh.userData.width / 2);
                         break;
 
                     case 'order' :
                         //userText.set({ content: userText.content += '&order=' });
                         newUserText += "&order=";
                         newUserTextMesh.geometry.update(newUserText);
-                        //newUserTextMesh.position.x = 0 - (newUserTextMesh.userData.width() / 2);
+                        //newUserTextMesh.position.x = 0 - (newUserTextMesh.userData.width / 2);
                         break;
 
                     
@@ -2089,14 +2221,14 @@ function makeKeyboard( language ) {
                             //userText.set({ content: userText.content = 'user:MartinSith' });
                             newUserText = "user:MartinSith";
                             newUserTextMesh.geometry.update(newUserText);
-                            //newUserTextMesh.position.x = 0 - (newUserTextMesh.userData.width() / 2);
+                            //newUserTextMesh.position.x = 0 - (newUserTextMesh.userData.width / 2);
 							break;
 
 						case 'backspace' :
 							if ( !newUserText.length ) break
                             newUserText = newUserText.substring(0, newUserText.length - 1) || "";
                             newUserTextMesh.geometry.update(newUserText);
-                            //newUserTextMesh.position.x = 0 - (newUserTextMesh.userData.width() / 2);
+                            //newUserTextMesh.position.x = 0 - (newUserTextMesh.userData.width / 2);
                             //if ( !userText.content.length ) break
 							/*userText.set({
 								content: userText.content.substring(0, userText.content.length - 1) || ""
@@ -2114,7 +2246,7 @@ function makeKeyboard( language ) {
 					//userText.set({ content: userText.content += key.info.input });
                     newUserText += key.info.input;
                     newUserTextMesh.geometry.update(newUserText);
-                    //newUserTextMesh.position.x = 0 - (newUserTextMesh.userData.width() / 2);
+                    //newUserTextMesh.position.x = 0 - (newUserTextMesh.userData.width / 2);
 				};
 
 			}
