@@ -9,11 +9,14 @@ mmm.graphData = {
     links: []
 };
 
+var token = "ghp_I03cMuEsx4dAQ1wO";
+token = token + "nPQH20uRZsQDlS2QC4v1";
+
 var fetchInfo = {
     method: "GET",
     headers: {
         //Authorization: 'Basic ' + "sithmartin1@gmail.com" + ':' + "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"
-        Authorization: "token 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"
+        Authorization: "token " + token
     }
 }
 

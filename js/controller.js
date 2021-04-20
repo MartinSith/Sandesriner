@@ -170,6 +170,13 @@ ccc.viveController = function() {
 
     this.onSelectEnd = function(event) {
         guiInputRight.pressed(false);
+
+        if (this.controllerRight.userData.selected !== undefined) {
+            const object = this.controllerRight.userData.selected;
+            object.parent.attach(object);
+
+            this.controllerRight.userData.selected = undefined;
+        }
     }
 
 	this.onSelectStart = function(event) {
@@ -182,6 +189,11 @@ ccc.viveController = function() {
 
         if (intersectedObject && intersectedObject.isUI){
             intersectedObject.setState( 'selected' );
+
+            if (intersectedObject.name == "layoutHeaderTitle") {
+                this.controllerRight.attach(intersectedObject.parent.parent);
+			    this.controllerRight.userData.selected = intersectedObject.parent.parent;
+            }
 
             if (intersectedObject.type == 'Key' && intersectedObject.info.input == 'enter')
                 buttonEnterFunction(intersectedObject);
@@ -296,8 +308,14 @@ ccc.mouse = function() {
             intersectedObject = null;
         }
 
+        console.log(intersectedObject);
+
         if (intersectedObject && intersectedObject.isUI){
             intersectedObject.setState( 'selected' );
+
+            if (intersectedObject.name == "layoutHeaderTitle") {
+                console.log(intersectedObject);
+            }
 
             if (intersectedObject.type == 'Key' && intersectedObject.info.input == 'enter')
                 buttonEnterFunction(intersectedObject);
@@ -735,7 +753,7 @@ function raycast(raycaster) {
 		// keys in panels that are hidden are not tested
 		if (!layoutOptions.getObjectById( obj.id ) &&
             !keyboard.getObjectById( obj.id ) &&
-            !obj.name.startsWith("button")
+            !obj.name.startsWith("button") && !obj.name.startsWith("layout")
 		) {
 			return closestIntersection
 		}

@@ -1508,13 +1508,7 @@ createLayoutHeader = function() {
         backgroundColor: new THREE.Color( 0xd3d3d3 ),
         backgroundOpacity: 0.3,
         name: "layoutHeaderTitle"
-    })/*.add(
-        new ThreeMeshUI.Text({
-            fontSize: 0.05,
-            fontColor: new THREE.Color( 0x000000 ),
-            content: title
-        }),
-    )*/;
+    });
 
     const layoutHeaderSpace = new ThreeMeshUI.InlineBlock({
         height: 0.1,
@@ -1565,7 +1559,8 @@ createLayoutHeader = function() {
     );
 
     layoutHeader.add(layoutHeaderTitle, layoutHeaderSpace, layoutHeaderMinimalize, layoutHeaderSpace2, layoutHeaderClose);
-    objsToTest.push(layoutHeaderMinimalize, layoutHeaderClose);
+    objsToTest.push(layoutHeaderMinimalize, layoutHeaderClose, layoutHeaderTitle);
+    console.log(objsToTest);
 
     return layoutHeader;
 }
