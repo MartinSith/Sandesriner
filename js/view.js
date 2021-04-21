@@ -278,27 +278,27 @@ vvv.initGraph = function() {
                     material
                 );
 
-                const sprite = new SpriteText(node.name);
+                var nameMesh = new dat.GUIVR.addTextMesh( node.name, { color: 0xffffff, scale: 1.0, align: 'left', position: 'center' });
+                nameMesh.position.y -= (node.nodeSize / 2 + 0.03);
+                obj.add(nameMesh);
+
+                /*const sprite = new SpriteText(node.name);
                 sprite.material.depthWrite = false;
                 sprite.strokeWidth = 0.1;
                 sprite.strokeColor = 0xffff00;
                 sprite.textHeight = 0.02;
                 obj.add(sprite);
-                sprite.position.y -= (node.nodeSize / 2 + 0.03);
+                sprite.position.y -= (node.nodeSize / 2 + 0.03);*/
 
                 return obj;
             })
             .d3Force('collision', d3.forceCollide(node => Math.cbrt(node.size) * 0))
             .d3VelocityDecay(0.3)
             .onEngineTick(fixNodesPositions)
-            .cooldownTime(10000);
+            .cooldownTime(5000);
 
     vvv.myGraph.d3Force('charge').strength(-0.1);
     vvv.myGraph.d3Force('link').distance(0.2);
-
-    //console.log(vvv._graphData.nodes[0].fx);
-    //vvv._graphData.nodes[0].y = 2;
-    //vvv._graphData.nodes[0].fy = 2;
 }
 
 vvv.createRepoNodeTexture = function(text, color) {
@@ -587,6 +587,8 @@ vvv.updateGraph = function(data, node) {
                 commitsInfo = [],
                 scrollPosition = 0,
                 loaded = 0;
+            
+            console.log("level: " + level + " module: " + module + " leaf: " + leaf + " parent: " + parent);
 
             const node = {
                 path,
@@ -1240,8 +1242,18 @@ vvv.createBaseGUI = function() {
         backgroundOpacity: 0,
     });
 
-    baseGUI.add(buttonKeyboard, space, buttonGraphGUI, space2, buttonStartTest, space3, buttonEndTest, buttonOpen, space4, buttonHistory, space5);
-    objsToTest.push(buttonKeyboard, buttonGraphGUI, buttonStartTest, buttonEndTest, buttonOpen, buttonHistory);
+    const buttonGraphUp = createButton(0.15, 0.15, "buttonGraphUp", "Graph UP");
+
+    const space6 = new ThreeMeshUI.InlineBlock({
+        height: 0.15,
+        width: 0.05,
+        backgroundOpacity: 0,
+    });
+
+    const buttonGraphDown = createButton(0.15, 0.15, "buttonGraphDown", "Graph DOWN");
+
+    baseGUI.add(buttonKeyboard, space, buttonGraphGUI, space2, buttonStartTest, space3, buttonEndTest, buttonOpen, space4, buttonHistory, space5, buttonGraphUp, space6, buttonGraphDown);
+    objsToTest.push(buttonKeyboard, buttonGraphGUI, buttonStartTest, buttonEndTest, buttonOpen, buttonHistory, buttonGraphUp, buttonGraphDown);
 
     // sem
     const nodeInfoBlock = new ThreeMeshUI.Block({
@@ -1362,6 +1374,45 @@ vvv.addRepoInfoSubBlock = function(node) {
 
     mesh.position.x -= 0.5;
     mesh.position.y -= 0.5;
+ 
+    return nodeInfoSubBlock;
+}
+
+vvv.addTestInfoSubBlock = function(seconds, controllerType) {
+
+    const nodeInfoSubBlock = new ThreeMeshUI.InlineBlock({
+        height: 0.5,
+        width: 1,
+        padding: 0.025,
+        fontFamily: './js/' + fontFilesName + '.json',
+        fontTexture: './js/' + fontFilesName + '.png',
+        interLine: 0,
+        alignContent: "left",
+        backgroundOpacity: 0,
+        name: "nodeInfoSubBlock"
+    });
+
+    var mesh;
+    if (controllerType == "mouse") {
+        mesh = new dat.GUIVR.addTextMesh( "Vysledok testu: " + "\n"
+                                        + "Pocet sekund: "          + seconds + "\n"
+                                        + "Pocet kliknuti: "        + numberOfClicks + "\n"
+                                        + "Pocet stlaceni klaves: " + numberOfKeysPressed + "\n"
+                                        , { color: 0xffffff, scale: 1.0, align: 'left'});
+    } else {
+        mesh = new dat.GUIVR.addTextMesh( "Vysledok testu: " + "\n"
+                                        + "Pocet sekund: "               + seconds + "\n"
+                                        + "Pocet kliknuti: "             + numberOfClicks + "\n"
+                                        + "Pocet pohybov na touchpade: " + numberOfKeysPressed + "\n"
+                                        , { color: 0xffffff, scale: 1.0, align: 'left'});
+    }
+
+    nodeInfoSubBlock.add(
+        mesh
+    );
+
+    mesh.position.x -= 0.49;
+    mesh.position.y -= 0.2;
  
     return nodeInfoSubBlock;
 }
@@ -1658,7 +1709,7 @@ createLayoutScroll = function() {
     return layoutScroll;
 }
 
-vvv.createHistoryLayout = function(posX, posY, posZ, commitsInfo) {
+vvv.createHistoryLayout = function(posX, posY, posZ, commitsInfo, nodeType) {
 
     var width = 1.2;
     var height = 4 * 0.15 + ((4 - 1) * 0.015) + 0.14;
@@ -1701,7 +1752,7 @@ vvv.createHistoryLayout = function(posX, posY, posZ, commitsInfo) {
     });
 
     for (i = 0; i < 4; i++) {
-        var commitSubButton = createHistorySubButton(i + 1);
+        var commitSubButton = createHistorySubButton(i + 1, nodeType);
         layoutHistoryScroll.add(commitSubButton);
         objsToTest.push(commitSubButton);
     }
@@ -1777,18 +1828,29 @@ createHistoryLayoutHeader = function() {
     return layoutHistoryHeader;
 }
 
-createHistorySubButton = function(row) {
+createHistorySubButton = function(row, nodeType) {
     var buttonKeyboard;
     if (row == 1) {
         buttonKeyboard = createButton(0.15, 0.15, "buttonHistoryUp", ">");
         buttonKeyboard.info = {scrollValue: -4, type: 'historyButton', scrollDirection: "up"};
     }
-    if (row == 2) {
-        buttonKeyboard = createButton(0.15, 0.15, "buttonHistoryDiff", "Show diff");
+
+    if (nodeType != "dir") {
+        if (row == 2) {
+            buttonKeyboard = createButton(0.15, 0.15, "buttonHistoryDiff", "Show diff");
+        }
+        if (row == 3) {
+            buttonKeyboard = createButton(0.15, 0.15, "buttonHistoryOpen", "Show file");
+        }
+    } else {
+        if (row == 2) {
+            buttonKeyboard = createButton(0.15, 0.15, "buttonHistoryDiffNull", "");
+        }
+        if (row == 3) {
+            buttonKeyboard = createButton(0.15, 0.15, "buttonHistoryOpenNull", "");
+        }
     }
-    if (row == 3) {
-        buttonKeyboard = createButton(0.15, 0.15, "buttonHistoryOpen", "Show file");
-    }
+
     if (row == 4) {
         buttonKeyboard = createButton(0.15, 0.15, "buttonHistoryDown", "<");
         buttonKeyboard.info = {scrollValue: 4, type: 'historyButton', scrollDirection: "down"};

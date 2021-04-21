@@ -2,6 +2,7 @@ var MVC = MVC || {};
 MVC.Controller = MVC.Controller || {};
 
 var ccc = MVC.Controller;
+ccc.controllerType;
 
 ccc.init = function(type, view) {
     if (type == 'mouse') {
@@ -13,6 +14,7 @@ ccc.init = function(type, view) {
     else {
         ccc.controller = new ccc.mouse();
     }
+    ccc.controllerType = type;
     ccc.view = view;
     ccc.controller.init();
 }
@@ -157,6 +159,7 @@ ccc.viveController = function() {
 
         if (gamepad) {
             self.pressedKeys.add({'x': gamepad.axes[0], 'y': gamepad.axes[1]});
+            numberOfKeysPressed++;
             /*if (gamepad.axes[0] != gamepadOld.axes[0] || gamepad.axes[1] != gamepadOld.axes[1]) {
                 gamepadOld.axes[0] = gamepad.axes[0];
                 gamepadOld.axes[1] = gamepad.axes[1];
@@ -182,6 +185,7 @@ ccc.viveController = function() {
 	this.onSelectStart = function(event) {
 		var controller = event.target;
 		var intersects = self.getIntersected(controller);
+        numberOfClicks++;
 
         if (intersects)
             intersectedObject = intersects.object;
@@ -202,6 +206,9 @@ ccc.viveController = function() {
 
             if (intersectedObject.name == "buttonOpen")
                 buttonOpenFunction(intersectedObject);
+
+            if (intersectedObject.name == "buttonGraphUp" || intersectedObject.name == "buttonGraphDown")
+                buttonGraphMove(intersectedObject.name);
 
             if (intersectedObject.name == "buttonHistory")
                 buttonHistoryFunction(intersectedObject);
@@ -319,11 +326,45 @@ ccc.mouse = function() {
             if (intersectedObject.type == 'Key' && intersectedObject.info.input == 'enter')
                 buttonEnterFunction(intersectedObject);
 
-            if (intersectedObject.name == "buttonMinimalize")
-                intersectedObject.parent.parent.visible = false;
+            if (intersectedObject.name == "buttonMinimalize" || intersectedObject.name == "buttonClose" 
+            || intersectedObject.name == "buttonHistoryMinimalize" || intersectedObject.name == "buttonHistoryClose") {
+                var layout = intersectedObject.parent.parent;
+                layout.visible = false;
+                console.log(layout);
 
+                intersectedObject.parent.children.forEach(child => {
+                    const index = objsToTest.indexOf(child);
+                    if (index > -1) {
+                        console.log(child);
+                        objsToTest.splice(index, 1);
+                    }
+                });
+
+                var layoutContent = layout.children.filter(obj => { return obj.name == "layoutHistoryContent" })[0];
+                var historyContentContainer = layoutContent.children.filter(obj => { return obj.name == "historyContentContainer" })[0];
+                historyContentContainer.children.forEach(child => {
+                    const index = objsToTest.indexOf(child);
+                    if (index > -1) {
+                        console.log(child);
+                        objsToTest.splice(index, 1);
+                    }
+                });
+
+                var layoutHistoryScroll = layout.children.filter(obj => { return obj.name == "layoutHistoryScroll" })[0];
+                layoutHistoryScroll.children.forEach(child => {
+                    const index = objsToTest.indexOf(child);
+                    if (index > -1) {
+                        console.log(child);
+                        objsToTest.splice(index, 1);
+                    }
+                });
+            }
+            
             if (intersectedObject.name == "buttonOpen")
                 buttonOpenFunction(intersectedObject);
+
+            if (intersectedObject.name == "buttonGraphUp" || intersectedObject.name == "buttonGraphDown")
+                buttonGraphMove(intersectedObject.name);
 
             if (intersectedObject.name == "buttonHistory")
                 buttonHistoryFunction(intersectedObject);
@@ -522,13 +563,39 @@ function buttonOpenFunction() {
     }
 }
 
+function buttonGraphMove(buttonName) {
+    var graphMoveNumber;
+
+    if (buttonName == "buttonGraphUp") {
+        graphMoveNumber = 0.5;
+    } else {
+        graphMoveNumber = -0.5;
+    }
+
+    ccc.view.myGraph.children.forEach(node => {
+        if (node.__graphObjType == 'node') {
+            if (node.__data.oldY != null) {
+                node.__data.oldY += graphMoveNumber;
+            }
+
+            node.__data.y += graphMoveNumber;
+            node.position.y = node.__data.y;
+            node.__data.fy = node.__data.y;
+        }
+
+        if (node.__graphObjType == 'link') {
+            node.position.y += graphMoveNumber;
+        }
+    })
+}
+
 function buttonHistoryFunction() {
     console.log("buttonHistoryFunction");
 
     var node = GUIsettings.clickedNode;
 
     if (node.__data.commitsInfo.length > 0) {
-        var historyLayout = ccc.view.createHistoryLayout(0, 0, 0, node.__data.commitsInfo);
+        var historyLayout = ccc.view.createHistoryLayout(0, 0, 0, node.__data.commitsInfo, node.__data.type);
         var historyLayoutHeaderTitle = historyLayout.children.filter(obj => { return obj.name == "layoutHistoryHeader" })[0].children.filter(obj => { return obj.name == "layoutHistoryHeaderTitle" })[0];
         historyLayoutHeaderTitle.add(
             new dat.GUIVR.addTextMesh("Commity pre: " + node.__data.name, { color: 0xffffff, scale: 1.0, align: 'center', position: "center"})
@@ -555,7 +622,7 @@ function buttonHistoryFunction() {
                 });
             });
 
-            var historyLayout = ccc.view.createHistoryLayout(0, 0, 0, node.__data.commitsInfo);
+            var historyLayout = ccc.view.createHistoryLayout(0, 0, 0, node.__data.commitsInfo, node.__data.type);
             var historyLayoutHeaderTitle = historyLayout.children.filter(obj => { return obj.name == "layoutHistoryHeader" })[0].children.filter(obj => { return obj.name == "layoutHistoryHeaderTitle" })[0];
             historyLayoutHeaderTitle.add(
                 new dat.GUIVR.addTextMesh("Commity pre: " + node.__data.name, { color: 0xffffff, scale: 1.0, align: 'center', position: "center"})
@@ -657,17 +724,22 @@ function buttonStartTestFunction() {
 
     startTime = new Date();
 
-    numberOfClicks = 0;
-    document.addEventListener("click", function(event){
-        numberOfClicks++;
-        console.log(numberOfClicks);
-    });
+    if (ccc.controllerType == "mouse") {
+        numberOfClicks = 0;
+        document.addEventListener("click", function(event){
+            numberOfClicks++;
+            console.log(numberOfClicks);
+        });
 
-    numberOfKeysPressed = 0;
-    document.addEventListener("keyup", function(event){
-        numberOfKeysPressed++;
-        console.log(numberOfKeysPressed);
-    });
+        numberOfKeysPressed = 0;
+        document.addEventListener("keyup", function(event){
+            numberOfKeysPressed++;
+            console.log(numberOfKeysPressed);
+        });
+    } else {
+        numberOfClicks = 0;
+        numberOfKeysPressed = 0;
+    }
 }
 
 function buttonEndTestFunction() {
@@ -677,6 +749,13 @@ function buttonEndTestFunction() {
     var timeDiff = endTime - startTime;
     timeDiff /= 1000;
     var seconds = Math.round(timeDiff);
+
+    var nodeInfoBlock = scene.children.filter(obj => { return obj.name == "baseGUI" })[0]
+                             .children.filter(obj => { return obj.name == "nodeInfoBlock" })[0];
+    nodeInfoBlock.remove(nodeInfoBlock.children.filter(obj => { return obj.name == "nodeInfoSubBlock" })[0]);
+
+    var nodeInfoSubBlock = ccc.view.addTestInfoSubBlock(seconds, ccc.controllerType);
+    nodeInfoBlock.add(nodeInfoSubBlock);
 }
 
 function buttonHoreDoleFunction(intersectedObject) {
