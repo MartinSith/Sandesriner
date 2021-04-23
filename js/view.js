@@ -263,13 +263,16 @@ vvv.initGraph = function() {
                         if (!language) language = node.repoInfo.language;
                         var material = new THREE.MeshLambertMaterial({ map: vvv.createRepoNodeTexture(language, node.color ), depthWrite: true, transparent: false, opacity: 0, color: node.color });
                         material.map.minFilter = THREE.LinearFilter;
+                        var nameMesh = new dat.GUIVR.addTextMesh( node.repoInfo.number + ". " + node.name, { color: 0xffffff, scale: 1.0, align: 'left', position: 'center' });
                     } else {
                         var material = new THREE.MeshLambertMaterial({depthWrite: true, transparent: false, opacity: 0, color: node.color });
+                        var nameMesh = new dat.GUIVR.addTextMesh( node.name, { color: 0xffffff, scale: 1.0, align: 'left', position: 'center' });
                     }
                 }
                 else {
                     var object = new THREE.SphereGeometry(node.nodeSize / 2, 16, 16);
                     var material = new THREE.MeshLambertMaterial({depthWrite: true, transparent: false, opacity: 0, color: node.color });
+                    var nameMesh = new dat.GUIVR.addTextMesh( node.name, { color: 0xffffff, scale: 1.0, align: 'left', position: 'center' });
                 }
                 
                 const obj = new THREE.Mesh(
@@ -278,7 +281,6 @@ vvv.initGraph = function() {
                     material
                 );
 
-                var nameMesh = new dat.GUIVR.addTextMesh( node.name, { color: 0xffffff, scale: 1.0, align: 'left', position: 'center' });
                 nameMesh.position.y -= (node.nodeSize / 2 + 0.03);
                 obj.add(nameMesh);
 
@@ -385,7 +387,7 @@ vvv.resetGraph = function(data) {
             name = "mainNode",
             expanded = 0,
             color = "#FFFF00",
-            commitCount = 10,
+            commitCount = null,
             oldX = 0,
             oldY = 2,
             oldZ = 0,
@@ -428,83 +430,93 @@ vvv.resetGraph = function(data) {
     var max = Math.max.apply(Math, data.map(function(o) { return o.size; }))
     var minValue = 0.1;
     var maxValue = 0.2;
+    var repoSortNumber = 0;
 
     data.forEach(repo => {
-
         console.log("repo");
         console.log(repo);
 
         var nodeSize = minValue;
 
-        const { nodes, links } = vvv.myGraph.graphData();
+        vvv.model.getFileCommitsInfo(repo.owner.login, repo.name, "").then(function(commitInfo) {
+            repoSortNumber++;
 
-        const levels = null,
-            level = 0,
-            module = null,
-            leaf = null,
-            parent = null,
-            size = repo.size,
-            path = "",
-            type = "dir",
-            user = repo.owner.login,
-            repository = repo.name,
-            name = repo.name,
-            expanded = 0,
-            color = "#FFFF00",
-            commitCount = null,
-            oldX = null,
-            oldY = null,
-            oldZ = null,
-            fileContent = null,
-            fileContentTokens = null,
-            scrollPosition = 0,
-            loaded = 0,
-            commitsInfo = [],
-            repoInfo = {
-                owner: repo.owner.login,
-                name: repo.name,
-                description: repo.description,
-                createdDate: repo.created_at,
-                updatedDate: repo.updated_at,
-                language: repo.language,
-                stars: repo.stargazers_count,
-                topics: repo.topics,
-                size: repo.size,
-                forks: repo.forks,
-                score: repo.score,
-                watchers: repo.watchers
+            console.log(repo.owner.login + " " + repo.name);
+            console.log(commitInfo);
+
+            const { nodes, links } = vvv.myGraph.graphData();
+
+            const levels = null,
+                level = 0,
+                module = null,
+                leaf = null,
+                parent = null,
+                size = repo.size,
+                path = "",
+                type = "dir",
+                user = repo.owner.login,
+                repository = repo.name,
+                name = repo.name,
+                expanded = 0,
+                color = "#FFFF00",
+                commitCount = commitInfo.length,
+                oldX = null,
+                oldY = null,
+                oldZ = null,
+                fileContent = null,
+                fileContentTokens = null,
+                scrollPosition = 0,
+                loaded = 0,
+                commitsInfo = [],
+                repoInfo = {
+                    owner: repo.owner.login,
+                    name: repo.name,
+                    description: repo.description,
+                    createdDate: repo.created_at,
+                    updatedDate: repo.updated_at,
+                    language: repo.language,
+                    stars: repo.stargazers_count,
+                    topics: repo.topics,
+                    size: repo.size,
+                    forks: repo.forks,
+                    score: repo.score,
+                    watchers: repo.watchers,
+                    number: repoSortNumber
+                };
+
+            const node = {
+                path,
+                leaf,
+                module,
+                size,
+                nodeSize,
+                level,
+                name,
+                user,
+                color,
+                commitCount,
+                repository,
+                type,
+                expanded,
+                loaded,
+                fileContent, 
+                fileContentTokens,
+                scrollPosition,
+                oldX,
+                oldY,
+                oldZ,
+                commitsInfo,
+                repoInfo,
             };
 
-        const node = {
-            path,
-            leaf,
-            module,
-            size,
-            nodeSize,
-            level,
-            name,
-            user,
-            color,
-            commitCount,
-            repository,
-            type,
-            expanded,
-            loaded,
-            fileContent, 
-            fileContentTokens,
-            scrollPosition,
-            oldX,
-            oldY,
-            oldZ,
-            commitsInfo,
-            repoInfo,
-        };
+            newGraphData.nodes.push(node);
+            newGraphData.links.push({ source: mainNode, target: node, targetNode: node });
 
-        newGraphData.nodes.push(node);
-        newGraphData.links.push({ source: mainNode, target: node, targetNode: node });
+            vvv.myGraph.graphData(newGraphData);
+        });
     });
 
-    vvv.myGraph.graphData(newGraphData);
+    //vvv.myGraph.graphData(newGraphData);
 }
 
 vvv.updateGraph = function(data, node) {
@@ -516,14 +528,16 @@ vvv.updateGraph = function(data, node) {
 
     console.log(clickedNode);
 
-    /*if (node.__data.commitCount == null)
-    vvv.model.getFileCommitsInfo(user, repository, node.__data.path).then(function(commitInfo) {
-        node.__data.commitCount = commitInfo.length;
-    });*/
+    /*if (clickedNode.__data.commitCount == null) {
+        vvv.model.getFileCommitsInfo(user, repository, clickedNode.__data.path).then(function(commitInfo) {
+            console.log(commitInfo);
+            clickedNode.__data.commitCount = commitInfo.length;
+        });
+    }*/
 
     var max = Math.max.apply(Math, data.map(function(o) { return o.size; }))
     var minValue = 0.1;
-    var maxValue = 0.2;
+    var maxValue = 0.25;
 
     data.forEach(({ size, path, name, type }) => {
 
@@ -537,7 +551,9 @@ vvv.updateGraph = function(data, node) {
             lastUpdateDate = commitInfo[0].commit.committer.date;
             commitCount = commitInfo.length;
 
-            var particleSpeed = Math.round(commitCount / clickedNode.__data.commitCount * 0.1 * 100) / 100 / 3;
+            //console.log("commitCount: " + commitCount + " clickedNode.__data.commitCount: " + clickedNode.__data.commitCount);
+
+            var particleSpeed = 0.01 + Math.round(commitCount / clickedNode.__data.commitCount * 0.1 * 100) / 100 / 3;
             //console.log("particleSpeed: " + particleSpeed);
 
             var repoCreatedDate = new Date(nodes.filter(obj => { return obj.name == clickedNode.__data.repository })[0].repoInfo.createdDate);
@@ -2055,28 +2071,28 @@ function makeUI() {
                     // hlavne
                     case 'user' :
                         //userText.set({ content: userText.content += '+user:' });
-                        newUserText += "+user";
+                        newUserText += "+user:";
                         newUserTextMesh.geometry.update(newUserText);
                         //newUserTextMesh.position.x = 0 - (newUserTextMesh.userData.width / 2);
                         break;
                     
                     case 'name' :
                         //userText.set({ content: userText.content += '+name:' });
-                        newUserText += "+name";
+                        newUserText += "+name:";
                         newUserTextMesh.geometry.update(newUserText);
                         //newUserTextMesh.position.x = 0 - (newUserTextMesh.userData.width / 2);
                         break;
 
                     case 'language' :
                         //userText.set({ content: userText.content += '+language:' });
-                        newUserText += "+language";
+                        newUserText += "+language:";
                         newUserTextMesh.geometry.update(newUserText);
                         //newUserTextMesh.position.x = 0 - (newUserTextMesh.userData.width / 2);
                         break;
 
                     case 'topic' :
                         //userText.set({ content: userText.content += '+topic:' });
-                        newUserText += "+topic";
+                        newUserText += "+topic:";
                         newUserTextMesh.geometry.update(newUserText);
                         //newUserTextMesh.position.x = 0 - (newUserTextMesh.userData.width / 2);
                         break;
@@ -2276,7 +2292,8 @@ function makeKeyboard( language ) {
                             //userText.set({ content: userText.content += ' ' });
                             //userText.set({ content: userText.content = 'JavaTestRepo+user:MartinSith' });
                             //userText.set({ content: userText.content = 'user:MartinSith' });
-                            newUserText = "user:MartinSith";
+                            //newUserText = "user:MartinSith";
+                            newUserText += " ";
                             newUserTextMesh.geometry.update(newUserText);
                             //newUserTextMesh.position.x = 0 - (newUserTextMesh.userData.width / 2);
 							break;

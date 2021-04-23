@@ -564,27 +564,29 @@ function buttonOpenFunction() {
 }
 
 function buttonGraphMove(buttonName) {
-    var graphMoveNumber;
+    var moveGraph;
 
     if (buttonName == "buttonGraphUp") {
-        graphMoveNumber = 0.5;
+        GUIsettings.repoHeight += GUIsettings.graphLevelHeight;
+        moveGraph = GUIsettings.graphLevelHeight;
     } else {
-        graphMoveNumber = -0.5;
+        GUIsettings.repoHeight -= GUIsettings.graphLevelHeight;
+        moveGraph = -GUIsettings.graphLevelHeight;
     }
 
     ccc.view.myGraph.children.forEach(node => {
         if (node.__graphObjType == 'node') {
             if (node.__data.oldY != null) {
-                node.__data.oldY += graphMoveNumber;
+                node.__data.oldY += moveGraph;
             }
 
-            node.__data.y += graphMoveNumber;
+            node.__data.y += moveGraph;
             node.position.y = node.__data.y;
             node.__data.fy = node.__data.y;
         }
 
         if (node.__graphObjType == 'link') {
-            node.position.y += graphMoveNumber;
+            node.position.y += moveGraph;
         }
     })
 }
@@ -610,6 +612,7 @@ function buttonHistoryFunction() {
     else {
         ccc.view.model.getFileCommitsInfo(node.__data.user, node.__data.repository, node.__data.path).then(function(result) {
             result.forEach(commit => {
+                console.log(commit);
 
                 var date = new Date(commit.commit.author.date);
                 date = date.toLocaleDateString('sk-SK', dateOptions);
@@ -683,6 +686,9 @@ function buttonCommitDiffFunction(intersectedObject) {
         return;
 
     ccc.view.model.getFileCommitInfo(node.__data.user, node.__data.repository, clickedHistoryButton.info.sha).then(function(result) {
+        console.log("commit info");
+        console.log(result);
+
         var commitInfo = node.__data.commitsInfo.filter(obj => { return obj.sha == clickedHistoryButton.info.sha })[0];
         commitInfo.diffContent = result.files.filter(obj => { return obj.filename == node.__data.path })[0].patch;
         commitInfo.diffContentTokens = ccc.view.addTextContentTokens(result.files.filter(obj => { return obj.filename == node.__data.path })[0].patch, node.__data.path.split('.').pop());
@@ -699,8 +705,8 @@ function buttonCommitDiffFunction(intersectedObject) {
         var layoutContent = layout.children.filter(obj => { return obj.name == "layoutContent" })[0];
         layoutContent.add(content);
 
-        layout.position.set(0, 0, 0);
-        scene.add(layout);
+        //layout.position.set(0, 0, 0);
+        node.add(layout);
     });
 }
 
