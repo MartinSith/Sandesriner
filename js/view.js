@@ -432,6 +432,23 @@ vvv.resetGraph = function(data) {
     var maxValue = 0.2;
     var repoSortNumber = 0;
 
+    var reposFirstDate;
+    var updateDates = [];
+    data.forEach(repo => {
+        updateDates.push(repo.updated_at);
+    });
+
+    var orderedDates = updateDates.sort(function(a, b) {
+        return Date.parse(b) - Date.parse(a);
+    });
+    console.log(orderedDates);
+
+    if (orderedDates.length > 10) {
+        reposFirstDate = new Date(orderedDates[10]);
+    } else {
+        reposFirstDate = new Date(orderedDates[orderedDates.length - 1]);
+    }
+
     data.forEach(repo => {
         console.log("repo");
         console.log(repo);
@@ -443,6 +460,42 @@ vvv.resetGraph = function(data) {
 
             console.log(repo.owner.login + " " + repo.name);
             console.log(commitInfo);
+
+            var nodeColor;
+            var repoCreatedDate = reposFirstDate;
+            console.log("repoCreatedDate: " + repoCreatedDate);
+            var nodeLastUpdateDate = new Date(repo.updated_at);
+            console.log("nodeLastUpdateDate: " + nodeLastUpdateDate);
+            var currentDate = new Date();
+            console.log("currentDate: " + currentDate);
+            const oneDay = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
+
+            const daysUntilToday = Math.round(Math.abs((Date.parse(repoCreatedDate) - Date.parse(currentDate)) / oneDay));
+            console.log("daysUntilToday: " + daysUntilToday);
+            const daysFromTodayToLastUpdate = Math.round(Math.abs((nodeLastUpdateDate - currentDate) / oneDay));
+            console.log("daysFromTodayToLastUpdate: " + daysFromTodayToLastUpdate);
+
+            //console.log(daysUntilToday  + " " + daysFromTodayToLastUpdate);
+
+            if (daysUntilToday == 0) {
+                var colorGreenValue = 0;
+            } else {
+                var colorGreenValue = Math.round(daysFromTodayToLastUpdate / daysUntilToday * 255);
+            }
+            console.log("colorGreenValue: " + colorGreenValue);
+
+            var hex = colorGreenValue.toString(16);
+            if (hex.length == 1) {
+                var colorGreenHexValue = "0" + hex;
+            }
+            else {
+                var colorGreenHexValue = hex;
+            }
+            nodeColor = "#FF" + colorGreenHexValue + "00";
+
+            if (Date.parse(repoCreatedDate) > Date.parse(nodeLastUpdateDate)) {
+                nodeColor = "#FFFF00";
+            }
 
             const { nodes, links } = vvv.myGraph.graphData();
 
@@ -458,7 +511,7 @@ vvv.resetGraph = function(data) {
                 repository = repo.name,
                 name = repo.name,
                 expanded = 0,
-                color = "#FFFF00",
+                //color = "#FFFF00",
                 commitCount = commitInfo.length,
                 oldX = null,
                 oldY = null,
@@ -493,7 +546,7 @@ vvv.resetGraph = function(data) {
                 level,
                 name,
                 user,
-                color,
+                color: nodeColor,
                 commitCount,
                 repository,
                 type,
@@ -1242,7 +1295,7 @@ vvv.createBaseGUI = function() {
     const buttonEndTest = createButton(0.15, 0.15, "buttonEndTest", " End Test");
 
     // otvor a historia
-    const buttonOpen = createButton(0.15, 0.15, "buttonOpen", "Open");
+    const buttonOpen = createButton(0.15, 0.15, "buttonOpen", "Open/Close");
 
     const space4 = new ThreeMeshUI.InlineBlock({
         height: 0.15,
@@ -1419,7 +1472,7 @@ vvv.addTestInfoSubBlock = function(seconds, controllerType) {
         mesh = new dat.GUIVR.addTextMesh( "Vysledok testu: " + "\n"
                                         + "Pocet sekund: "               + seconds + "\n"
                                         + "Pocet kliknuti: "             + numberOfClicks + "\n"
-                                        + "Pocet pohybov na touchpade: " + numberOfKeysPressed + "\n"
+                                        //+ "Pocet pohybov na touchpade: " + numberOfKeysPressed + "\n"
                                         , { color: 0xffffff, scale: 1.0, align: 'left'});
     }
 
@@ -1453,6 +1506,48 @@ vvv.updateNodeInfo = function(node) {
                     + "Updated: "      + updatedDate.toLocaleDateString('sk-SK', dateOptions) + "\n";
 
     return newText;
+}
+
+vvv.addCommitInfoSubBlock = function(commitInfo) {
+
+    const nodeInfoSubBlock = new ThreeMeshUI.InlineBlock({
+        height: 0.5,
+        width: 1,
+        padding: 0.025,
+        fontFamily: './js/' + fontFilesName + '.json',
+        fontTexture: './js/' + fontFilesName + '.png',
+        interLine: 0,
+        alignContent: "left",
+        backgroundOpacity: 0,
+        name: "nodeInfoSubBlock"
+    });
+
+    var date = new Date(commitInfo.commit.author.date);
+    date = date.toLocaleDateString('sk-SK', dateOptions);
+
+    var commitMessageSplit = commitInfo.commit.message.split('\n')[0];
+    var commitMessage = commitMessageSplit.length > 50 ? commitMessageSplit.substring(0, 50) + "..." : commitMessageSplit;
+
+    var commitFilesInfo = "";
+    commitInfo.files.forEach(file => { 
+        commitFilesInfo += "  - " + file.filename + " (+ " + file.additions + " | - " + file.deletions + ") \n"
+    })
+
+    var mesh = new dat.GUIVR.addTextMesh( "Nazov commitu: "     + commitMessage + "\n"
+                                        + "Autor commitu: "     + commitInfo.commit.author.name + "\n"
+                                        + "Datum commitu: "     + date + "\n"
+                                        + "Commitnute subory: " + "\n"
+                                        + commitFilesInfo
+                                        , { color: 0xffffff, scale: 1.0, align: 'left'});
+
+    nodeInfoSubBlock.add(
+        mesh
+    );
+
+    mesh.position.x -= 0.49;
+    mesh.position.y -= 0.37;
+
+    return nodeInfoSubBlock;
 }
 
 vvv.addNodeInfoSubBlock = function(node) {

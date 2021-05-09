@@ -4,6 +4,8 @@ MVC.Controller = MVC.Controller || {};
 var ccc = MVC.Controller;
 ccc.controllerType;
 
+var imageFileExtensions = ['jpg', 'png'];
+
 ccc.init = function(type, view) {
     if (type == 'mouse') {
         ccc.controller = new ccc.mouse();
@@ -237,7 +239,7 @@ ccc.viveController = function() {
                     buttonHistoryHoreDoleFunction(intersectedObject);
 
             if (intersectedObject.name == "buttonCommit") 
-                GUIsettings.clickedHistoryButton = intersectedObject;
+                buttonCommitInfoFunction(intersectedObject);
 
             objsToTest.forEach( (obj)=> {
 
@@ -393,7 +395,7 @@ ccc.mouse = function() {
                     buttonHistoryHoreDoleFunction(intersectedObject);
 
             if (intersectedObject.name == "buttonCommit")
-                GUIsettings.clickedHistoryButton = intersectedObject;
+                buttonCommitInfoFunction(intersectedObject);
 
             objsToTest.forEach( (obj)=> {
 
@@ -485,27 +487,67 @@ function buttonEnterFunction() {
     });
 }
 
+function removeNodeChildren(node) {
+    console.log(node);
+    let { nodes, links } = ccc.view.myGraph.graphData();
+
+    // get linked nodes and update links
+    const nodeLinks = links.filter(l => l.source == node);
+
+    // for each node linked with main
+    nodeLinks.forEach(link => {
+        var index = nodes.indexOf(link.target);
+        if (index > -1) {
+            nodes.splice(index, 1);
+        }
+
+        var index = links.indexOf(link);
+        if (index > -1) {
+            links.splice(index, 1);
+        }
+
+        removeNodeChildren(link.target);
+    })
+
+    ccc.view.myGraph.graphData({ nodes, links });
+}
+
 function buttonOpenFunction() {
     console.log("buttonOpenFunction");
 
     var clickedNode = GUIsettings.clickedNode;
+    console.log("clickedNode");
+    console.log(clickedNode);
                 
     // ak je to priecinok
     if (clickedNode.__data.type == "dir") {
-        clickedNode.__data.oldX = clickedNode.__data.x;
-        clickedNode.__data.oldY = clickedNode.__data.y;
-        clickedNode.__data.oldZ = clickedNode.__data.z;
+        if (clickedNode.__data.expanded == 0) {
+            clickedNode.__data.oldX = clickedNode.__data.x;
+            clickedNode.__data.oldY = clickedNode.__data.y;
+            clickedNode.__data.oldZ = clickedNode.__data.z;
 
-        ccc.view.model.getContent(clickedNode.__data.user, clickedNode.__data.repository, clickedNode.__data.path).then(function(result) {
-            ccc.view.updateGraph(result, clickedNode);
-        });
+            ccc.view.model.getContent(clickedNode.__data.user, clickedNode.__data.repository, clickedNode.__data.path).then(function(result) {
+                ccc.view.updateGraph(result, clickedNode);
+                clickedNode.__data.expanded = 1;
+            });
+        } else {
+            console.log(ccc.view.myGraph.children);
+            ccc.view.myGraph.children.filter(child => child.__graphObjType == 'node');
+            let { nodes, links } = ccc.view.myGraph.graphData();
+            removeNodeChildren(nodes.filter(node => node.name == clickedNode.__data.name)[0]);
+            clickedNode.__data.expanded = 0;
+            clickedNode.__data.oldX = null;
+            clickedNode.__data.oldY = null;
+            clickedNode.__data.oldZ = null;
+        }
 
     }
     // ak je to subor
     else if (clickedNode.__data.type == "file") {
 
         // ak je to obrazok
-        if (clickedNode.__data.name.split('.').pop() == 'png') {
+        if (imageFileExtensions.indexOf(clickedNode.__data.name.split('.').pop()) > 0) {
+        //if (clickedNode.__data.name.split('.').pop() == 'png') {
 
             clickedNode.__data.oldX = clickedNode.__data.x;
             clickedNode.__data.oldY = clickedNode.__data.y;
@@ -638,6 +680,25 @@ function buttonHistoryFunction() {
             node.add(historyLayout);
         });
     }
+}
+
+function buttonCommitInfoFunction(intersectedObject) {
+    GUIsettings.clickedHistoryButton = intersectedObject;
+
+    var node = intersectedObject.parent.parent.parent.parent;
+    var clickedHistoryButton = GUIsettings.clickedHistoryButton;
+
+    ccc.view.model.getFileCommitInfo(node.__data.user, node.__data.repository, clickedHistoryButton.info.sha).then(function(result) {
+        console.log("commit info");
+        console.log(result);
+
+        var nodeInfoBlock = scene.children.filter(obj => { return obj.name == "baseGUI" })[0]
+                                 .children.filter(obj => { return obj.name == "nodeInfoBlock" })[0];
+        nodeInfoBlock.remove(nodeInfoBlock.children.filter(obj => { return obj.name == "nodeInfoSubBlock" })[0]);
+
+        var nodeInfoSubBlock = ccc.view.addCommitInfoSubBlock(result);
+        nodeInfoBlock.add(nodeInfoSubBlock);
+        });
 }
 
 function buttonCommitFunction(intersectedObject) {
