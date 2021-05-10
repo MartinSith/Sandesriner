@@ -313,12 +313,19 @@ ccc.mouse = function() {
     this.raycaster = new THREE.Raycaster();
     this.mouse = new THREE.Vector2();
     this.pressedKeys = new Set();
+    this.pIntersect = new THREE.Vector3();
+    this.shift = new THREE.Vector3();
+    this.isDragging = false;
+    this.dragObject;
+    this.dragObjectClick = new THREE.Vector2();
 
     var self = this;
 
     this.init = function() {
         window.addEventListener('mousemove', this.onMouseMove, false);
         window.addEventListener('click', this.onMouseClick, false);
+        window.addEventListener('mouseup', this.onMouseUp, false);
+        window.addEventListener('mousedown', this.onMouseDown, false);
         window.addEventListener('keydown', this.onKeyDown, false);
         window.addEventListener('keyup', this.onKeyUp, false);
     }
@@ -330,6 +337,45 @@ ccc.mouse = function() {
     this.onMouseMove = function(event) {
         self.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
         self.mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+
+        if (self.isDragging) {
+            self.dragObject.position.x = self.mouse.x * 4;
+            self.dragObject.position.y = self.mouse.y * 4;
+        }
+    }
+
+    this.onMouseUp = function(event) {
+        self.isDragging = false;
+        self.dragObject = null;
+    }
+
+    this.onMouseDown = function(event) {
+        self.raycaster.setFromCamera(self.mouse, this.camera);
+
+        var intersects = self.raycaster.intersectObjects(ccc.view.myGraph.children.filter(child => child.__graphObjType == 'node'));
+        var keyboardIntersect = raycast(self.raycaster);
+        var intersectedObject;
+
+        if (intersects[0] && keyboardIntersect) {
+            intersectedObject = intersects[0].distance < keyboardIntersect.distance ? intersects[0].object : keyboardIntersect.object;
+        } 
+        else if (intersects[0]) {
+            intersectedObject = intersects[0].object;
+        } 
+        else if (keyboardIntersect) {
+            intersectedObject = keyboardIntersect.object;
+        }
+        else {
+            intersectedObject = null;
+        }
+
+        if (intersectedObject && intersectedObject.isUI){
+            if (intersectedObject.name == "layoutHeaderTitle" || intersectedObject.name == "layoutHistoryHeaderTitle") {
+                console.log(intersectedObject.parent.parent);
+                self.isDragging = true;
+                self.dragObject = intersectedObject.parent.parent;
+            }
+        }
     }
 
     this.onMouseClick = function(event) {
@@ -356,10 +402,6 @@ ccc.mouse = function() {
 
         if (intersectedObject && intersectedObject.isUI){
             intersectedObject.setState( 'selected' );
-
-            if (intersectedObject.name == "layoutHeaderTitle" || intersectedObject.name == "layoutHistoryHeaderTitle") {
-                console.log(intersectedObject);
-            }
 
             if (intersectedObject.type == 'Key' && intersectedObject.info.input == 'enter')
                 buttonEnterFunction(intersectedObject);
