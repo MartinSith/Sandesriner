@@ -1934,7 +1934,7 @@ createHistoryLayoutHeader = function() {
     );
 
     layoutHistoryHeader.add(layoutHistoryHeaderTitle, layoutHistoryHeaderSpace, layoutHistoryHeaderMinimalize, layoutHistoryHeaderSpace2, layoutHistoryHeaderClose);
-    objsToTest.push(layoutHistoryHeaderMinimalize, layoutHistoryHeaderClose);
+    objsToTest.push(layoutHistoryHeaderMinimalize, layoutHistoryHeaderClose, layoutHistoryHeaderTitle);
 
     return layoutHistoryHeader;
 }

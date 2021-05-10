@@ -179,7 +179,7 @@ ccc.viveController = function() {
         if (controller.userData.selected !== undefined) {
             const object = controller.userData.selected;
             const objectParent = controller.userData.selectedParent;
-            objectParent.attach(object);
+            scene.attach(object);
 
             controller.userData.selected = undefined;
             controller.userData.selectedParent = undefined;
@@ -199,7 +199,7 @@ ccc.viveController = function() {
         if (intersectedObject && intersectedObject.isUI){
             intersectedObject.setState( 'selected' );
 
-            if (intersectedObject.name == "layoutHeaderTitle") {
+            if (intersectedObject.name == "layoutHeaderTitle" || intersectedObject.name == "layoutHistoryHeaderTitle")  {
                 controller.attach(intersectedObject.parent.parent);
 			    controller.userData.selected = intersectedObject.parent.parent;
                 controller.userData.selectedParent = intersectedObject.parent.parent.parent;
@@ -326,7 +326,7 @@ ccc.mouse = function() {
         if (intersectedObject && intersectedObject.isUI){
             intersectedObject.setState( 'selected' );
 
-            if (intersectedObject.name == "layoutHeaderTitle") {
+            if (intersectedObject.name == "layoutHeaderTitle" || intersectedObject.name == "layoutHistoryHeaderTitle") {
                 console.log(intersectedObject);
             }
 
