@@ -1545,7 +1545,7 @@ vvv.addCommitInfoSubBlock = function(commitInfo) {
     );
 
     mesh.position.x -= 0.49;
-    mesh.position.y -= 0.37;
+    mesh.position.y -= 0.15 + 0.07 *commitInfo.files.length;
 
     return nodeInfoSubBlock;
 }

@@ -178,15 +178,19 @@ ccc.viveController = function() {
 
         if (controller.userData.selected !== undefined) {
             const object = controller.userData.selected;
-            object.parent.attach(object);
+            const objectParent = controller.userData.selectedParent;
+            objectParent.attach(object);
 
             controller.userData.selected = undefined;
+            controller.userData.selectedParent = undefined;
         }
     }
 
 	this.onSelectStart = function(event) {
 		var controller = event.target;
+        console.log(controller);
 		var intersects = self.getIntersected(controller);
+        var intersectedObject;
         numberOfClicks++;
 
         if (intersects)
@@ -198,6 +202,7 @@ ccc.viveController = function() {
             if (intersectedObject.name == "layoutHeaderTitle") {
                 controller.attach(intersectedObject.parent.parent);
 			    controller.userData.selected = intersectedObject.parent.parent;
+                controller.userData.selectedParent = intersectedObject.parent.parent.parent;
             }
 
             if (intersectedObject.type == 'Key' && intersectedObject.info.input == 'enter')
