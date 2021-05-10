@@ -208,8 +208,39 @@ ccc.viveController = function() {
             if (intersectedObject.type == 'Key' && intersectedObject.info.input == 'enter')
                 buttonEnterFunction(intersectedObject);
 
-            if (intersectedObject.name == "buttonMinimalize")
-                intersectedObject.parent.parent.visible = false;
+            if (intersectedObject.name == "buttonMinimalize" || intersectedObject.name == "buttonClose" 
+            || intersectedObject.name == "buttonHistoryMinimalize" || intersectedObject.name == "buttonHistoryClose") {
+                var layout = intersectedObject.parent.parent;
+                layout.visible = false;
+                console.log(layout);
+
+                intersectedObject.parent.children.forEach(child => {
+                    const index = objsToTest.indexOf(child);
+                    if (index > -1) {
+                        console.log(child);
+                        objsToTest.splice(index, 1);
+                    }
+                });
+
+                var layoutContent = layout.children.filter(obj => { return obj.name == "layoutHistoryContent" })[0];
+                var historyContentContainer = layoutContent.children.filter(obj => { return obj.name == "historyContentContainer" })[0];
+                historyContentContainer.children.forEach(child => {
+                    const index = objsToTest.indexOf(child);
+                    if (index > -1) {
+                        console.log(child);
+                        objsToTest.splice(index, 1);
+                    }
+                });
+
+                var layoutHistoryScroll = layout.children.filter(obj => { return obj.name == "layoutHistoryScroll" })[0];
+                layoutHistoryScroll.children.forEach(child => {
+                    const index = objsToTest.indexOf(child);
+                    if (index > -1) {
+                        console.log(child);
+                        objsToTest.splice(index, 1);
+                    }
+                });
+            }
 
             if (intersectedObject.name == "buttonOpen")
                 buttonOpenFunction(intersectedObject);
