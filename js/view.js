@@ -1447,6 +1447,35 @@ vvv.addRepoInfoSubBlock = function(node) {
     return nodeInfoSubBlock;
 }
 
+vvv.addStartTestInfoSubBlock = function() {
+
+    const nodeInfoSubBlock = new ThreeMeshUI.InlineBlock({
+        height: 0.5,
+        width: 1,
+        padding: 0.025,
+        fontFamily: './js/' + fontFilesName + '.json',
+        fontTexture: './js/' + fontFilesName + '.png',
+        interLine: 0,
+        alignContent: "left",
+        backgroundOpacity: 0,
+        name: "nodeInfoSubBlock"
+    });
+
+    var mesh;
+    mesh = new dat.GUIVR.addTextMesh( "Test sa zacal " + "\n"
+                                    + "Po dokonceni ulohy kliknite na tlacidlo End Test"
+                                    , { color: 0xffffff, scale: 1.0, align: 'left'});
+
+    nodeInfoSubBlock.add(
+        mesh
+    );
+
+    mesh.position.x -= 0.49;
+    mesh.position.y -= 0.2;
+ 
+    return nodeInfoSubBlock;
+}
+
 vvv.addTestInfoSubBlock = function(seconds, controllerType) {
 
     const nodeInfoSubBlock = new ThreeMeshUI.InlineBlock({

@@ -843,6 +843,13 @@ function buttonStartTestFunction() {
         numberOfClicks = 0;
         numberOfKeysPressed = 0;
     }
+
+    var nodeInfoBlock = scene.children.filter(obj => { return obj.name == "baseGUI" })[0]
+                             .children.filter(obj => { return obj.name == "nodeInfoBlock" })[0];
+    nodeInfoBlock.remove(nodeInfoBlock.children.filter(obj => { return obj.name == "nodeInfoSubBlock" })[0]);
+
+    var nodeInfoSubBlock = ccc.view.addStartTestInfoSubBlock();
+    nodeInfoBlock.add(nodeInfoSubBlock);
 }
 
 function buttonEndTestFunction() {
